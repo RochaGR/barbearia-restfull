@@ -1,7 +1,5 @@
 package com.br.barbeariaRest.model;
 
-public class test {
+public class test2 {
 
-    }
-
-
+}
