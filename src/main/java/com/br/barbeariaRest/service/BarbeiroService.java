@@ -11,11 +11,13 @@ public class BarbeiroService {
 
     private final BarbeiroRepository barbeiroRepository;
 
-    private BarbeiroService (BarbeiroRepository barbeiroRepository) {
+    private BarbeiroService(BarbeiroRepository barbeiroRepository) {
         this.barbeiroRepository = barbeiroRepository;
-    };
+    }
 
-    public Barbeiro salvar(Barbeiro barbeiro){
+    ;
+
+    public Barbeiro salvar(Barbeiro barbeiro) {
         return barbeiroRepository.save(barbeiro);
 
     }
@@ -25,9 +27,13 @@ public class BarbeiroService {
 
     }
 
-    public List<Barbeiro> listarTodos(){
+    public List<Barbeiro> listarTodos() {
         return barbeiroRepository.findAll();
 
+    }
+
+    public void excluir (Integer id) {
+        barbeiroRepository.deleteById(id);
     }
 
 

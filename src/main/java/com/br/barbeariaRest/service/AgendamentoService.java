@@ -53,4 +53,7 @@ public class AgendamentoService {
     public Agendamento buscarPorId(int id) {
         return agendamentoRepository.findById(id).orElse(null);
     }
+    public void excluir(Integer id) {
+        agendamentoRepository.deleteById(id);
+    }
 }
