@@ -1,10 +1,13 @@
 package com.br.barbeariaRest.repository;
 
-import com.br.barbeariaRest.model.Cliente;
+
+import com.br.barbeariaRest.model.Agendamento;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ClienteRepository  extends JpaRepository<Cliente, Integer> {
+public interface AgendamentoRepository  extends JpaRepository<Agendamento, Integer>{
 
 }
+
+
