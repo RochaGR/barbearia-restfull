@@ -2,18 +2,18 @@ package com.br.barbeariaRest.service;
 
 import com.br.barbeariaRest.model.Barbeiro;
 import com.br.barbeariaRest.repository.BarbeiroRepository;
-import com.br.barbeariaRest.repository.ClienteRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 
 @Service
 public class BarbeiroService {
 
-    @Autowired
-    private BarbeiroRepository  barbeiroRepository;
+    private final BarbeiroRepository barbeiroRepository;
+
+    private BarbeiroService (BarbeiroRepository barbeiroRepository) {
+        this.barbeiroRepository = barbeiroRepository;
+    };
 
     public Barbeiro salvar(Barbeiro barbeiro){
         return barbeiroRepository.save(barbeiro);
