@@ -3,6 +3,8 @@ package com.br.barbeariaRest.model;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "servicos")
 public class Servico {
@@ -13,12 +15,21 @@ public class Servico {
 
     private String nome;
     private String descricao;
-    private Double preco;
+    private BigDecimal preco;
     private Integer duracaoMinutos;
     private boolean ativo;
 
 
     public Servico() {
+    }
+
+    public Servico(int id, String nome, String descricao, BigDecimal preco, Integer duracaoMinutos, boolean ativo) {
+        this.id = id;
+        this.nome = nome;
+        this.descricao = descricao;
+        this.preco = preco;
+        this.duracaoMinutos = duracaoMinutos;
+        this.ativo = ativo;
     }
 
     public int getId() {
@@ -45,11 +56,11 @@ public class Servico {
         this.descricao = descricao;
     }
 
-    public Double getPreco() {
+    public BigDecimal getPreco() {
         return preco;
     }
 
-    public void setPreco(Double preco) {
+    public void setPreco(BigDecimal preco) {
         this.preco = preco;
     }
 
@@ -64,15 +75,8 @@ public class Servico {
     public boolean isAtivo() {
         return ativo;
     }
+
     public void setAtivo(boolean ativo) {
         this.ativo = ativo;
-    }
-
-    public Servico(int id, String nome, String descricao, Double preco, Integer duracaoCorte) {
-        this.id = id;
-        this.nome = nome;
-        this.descricao = descricao;
-        this.preco = preco;
-        this.duracaoMinutos = duracaoCorte;
     }
 }

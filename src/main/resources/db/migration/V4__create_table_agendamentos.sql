@@ -5,6 +5,6 @@ CREATE TABLE agendamentos (
         servico_id BIGINT NOT NULL REFERENCES servicos(id),
         data_hora TIMESTAMP NOT NULL,
         status VARCHAR(20) DEFAULT 'AGENDADO',
-        observacoes TEXT,
+        observacoes varchar(100),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

@@ -11,7 +11,7 @@ public class Barbeiro {
     private int id;
 
     private String nome;
-    private String especialidade;
+    private String especialidades;
     private boolean ativo;
 
     public Barbeiro() {
@@ -33,12 +33,12 @@ public class Barbeiro {
         this.nome = nome;
     }
 
-    public String getEspecialidade() {
-        return especialidade;
+    public String getEspecialidades() {
+        return especialidades;
     }
 
-    public void setEspecialidade(String especialidade) {
-        this.especialidade = especialidade;
+    public void setEspecialidades(String especialidades) {
+        this.especialidades = especialidades;
     }
 
     public boolean isAtivo() {
@@ -52,7 +52,7 @@ public class Barbeiro {
     public Barbeiro(int id, boolean ativo, String especialidade, String nome) {
         this.id = id;
         this.ativo = ativo;
-        this.especialidade = especialidade;
+        this.especialidades = especialidades;
         this.nome = nome;
     }
 }
