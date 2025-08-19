@@ -25,14 +25,21 @@ public class ClienteController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Cliente> atualizar(@PathVariable Integer id, @RequestBody Cliente cliente){
-        Cliente clienteBusca = service.buscarPorId(id);
-        if(clienteBusca == null){
+    public ResponseEntity<Cliente> atualizar(@PathVariable Integer id, @RequestBody Cliente cliente) {
+        Cliente clienteExistente = service.buscarPorId(id);
+        if (clienteExistente == null) {
             return ResponseEntity.notFound().build();
-        } else {
-            cliente.setId(id);
-            return ResponseEntity.ok(service.salvar(cliente));
         }
+
+        if (cliente == null || cliente.getNome() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        clienteExistente.setNome(cliente.getNome());
+        clienteExistente.setEmail(cliente.getEmail());
+        clienteExistente.setTelefone(cliente.getTelefone());
+
+        return ResponseEntity.ok(service.salvar(clienteExistente));
     }
 
     @GetMapping
@@ -51,7 +58,7 @@ public class ClienteController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> excluir(@PathVariable Integer id){
+    public ResponseEntity<Void> deletarPorId(@PathVariable Integer id){
         Cliente cliente = service.buscarPorId(id);
         if(cliente == null){
             return ResponseEntity.notFound().build();
