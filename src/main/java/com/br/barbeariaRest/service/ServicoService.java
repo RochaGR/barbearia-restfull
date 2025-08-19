@@ -24,7 +24,7 @@ public class ServicoService {
         return servicoRepository.findById(id).orElse(null);
 
     }
-    public List<Servico> buscarTodos() {
+    public List<Servico> listarTodos() {
         return servicoRepository.findAll();
     }
     public void excluir(Integer id) {
