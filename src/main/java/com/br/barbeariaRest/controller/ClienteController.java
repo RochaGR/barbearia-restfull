@@ -51,11 +51,12 @@ public class ClienteController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletar(@PathVariable Integer id){
+    public ResponseEntity<Void> excluir(@PathVariable Integer id){
         Cliente cliente = service.buscarPorId(id);
         if(cliente == null){
             return ResponseEntity.notFound().build();
         }
+        service.excluir(id);
         return ResponseEntity.noContent().build();
     }
 }
