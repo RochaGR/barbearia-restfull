@@ -1,6 +1,5 @@
 package com.br.barbeariaRest.model;
 
-
 import jakarta.persistence.*;
 
 @Entity

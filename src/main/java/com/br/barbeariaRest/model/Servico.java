@@ -1,8 +1,6 @@
 package com.br.barbeariaRest.model;
 
-
 import jakarta.persistence.*;
-
 import java.math.BigDecimal;
 
 @Entity
@@ -17,7 +15,7 @@ public class Servico {
     private String descricao;
     private BigDecimal preco;
     private Integer duracaoMinutos;
-    private boolean ativo;
+    private boolean ativo = true;
 
 
     public Servico() {

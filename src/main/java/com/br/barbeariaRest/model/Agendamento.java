@@ -26,6 +26,7 @@ public class Agendamento {
 
     private LocalDateTime dataHora;
     private String status = "AGENDADO";
+    //Pré setado Agendado
     private String observacoes;
 
     public Cliente getCliente() { return cliente;

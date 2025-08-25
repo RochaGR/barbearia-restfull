@@ -13,6 +13,8 @@ public class Barbeiro {
     private String nome;
     private String especialidades;
     private boolean ativo;
+    // Deixei para quando criar vir false, por regras de negocio, no front terá a opção de selecionar
+    //se ele vai estar ativo ou não
 
     public Barbeiro() {
     }
