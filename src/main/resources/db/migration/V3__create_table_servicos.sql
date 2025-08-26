@@ -4,5 +4,7 @@ CREATE TABLE servicos (
         descricao varchar(100) not null,
         preco DECIMAL(10,2) NOT NULL,
         duracao_minutos INTEGER NOT NULL,
-        ativo BOOLEAN DEFAULT true
+        ativo BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
 );
