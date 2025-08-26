@@ -50,7 +50,6 @@ public class Agendamento {
     }
 
 
-
     public LocalDateTime getDataHora() {
         return dataHora;
     }
@@ -73,5 +72,13 @@ public class Agendamento {
 
     public void setObservacoes(String observacoes) {
         this.observacoes = observacoes;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }
