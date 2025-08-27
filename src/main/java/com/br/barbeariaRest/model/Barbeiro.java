@@ -8,7 +8,7 @@ public class Barbeiro {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     private String nome;
     private String especialidades;
@@ -19,11 +19,18 @@ public class Barbeiro {
     public Barbeiro() {
     }
 
-    public int getId() {
+    public Barbeiro(Long id, String nome, String especialidades, boolean ativo) {
+        this.id = id;
+        this.nome = nome;
+        this.especialidades = especialidades;
+        this.ativo = ativo;
+    }
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -51,10 +58,5 @@ public class Barbeiro {
         this.ativo = ativo;
     }
 
-    public Barbeiro(int id, boolean ativo, String especialidade, String nome) {
-        this.id = id;
-        this.ativo = ativo;
-        this.especialidades = especialidades;
-        this.nome = nome;
-    }
+
 }

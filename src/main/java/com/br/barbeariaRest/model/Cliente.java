@@ -8,18 +8,17 @@ public class Cliente {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     private String nome;
     private String telefone;
     private String email;
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
+    public Cliente(Long id, String nome, String telefone, String email) {
         this.id = id;
+        this.nome = nome;
+        this.telefone = telefone;
+        this.email = email;
     }
 
     public String getNome() {
@@ -46,11 +45,12 @@ public class Cliente {
         this.email = email;
     }
 
-    public Cliente(int id, String email, String telefone, String nome) {
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
         this.id = id;
-        this.email = email;
-        this.telefone = telefone;
-        this.nome = nome;
     }
 
     public Cliente() {

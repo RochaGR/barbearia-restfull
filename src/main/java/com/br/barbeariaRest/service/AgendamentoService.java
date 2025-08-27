@@ -31,19 +31,19 @@ public class AgendamentoService {
 
     public Agendamento salvar(Agendamento agendamento) {
         // Validar cliente
-        Cliente cliente = clienteService.buscarPorId(agendamento.getCliente().getId());
+        Cliente cliente = clienteService.buscarPorId(Math.toIntExact(agendamento.getCliente().getId()));
         if (cliente == null) {
             throw new RuntimeException("Cliente não encontrado");
         }
 
         // Validar barbeiro
-        Barbeiro barbeiro = barbeiroService.buscarPorId(agendamento.getBarbeiro().getId());
+        Barbeiro barbeiro = barbeiroService.buscarPorId(Math.toIntExact(agendamento.getBarbeiro().getId()));
         if (barbeiro == null || !barbeiro.isAtivo()) {
             throw new RuntimeException("Barbeiro não encontrado ou inativo");
         }
 
         // Validar serviço
-        Servico servico = servicoService.buscarPorId(agendamento.getServico().getId());
+        Servico servico = servicoService.buscarPorId(Math.toIntExact(agendamento.getServico().getId()));
         if (servico == null || !servico.isAtivo()) {
             throw new RuntimeException("Serviço não encontrado ou inativo");
         }
