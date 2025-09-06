@@ -18,17 +18,16 @@ public class Barbeiro {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String nome;
+
     private String especialidades;
-    private boolean ativo;
-    // Deixei para quando criar vir false, por regras de negocio, no front terá a opção de selecionar
-    //se ele vai estar ativo ou não
 
-    @OneToOne
-    @JoinColumn(name = "usuario_id")
+    @Column(nullable = false)
+    private boolean ativo = true;
+
+    // Relacionamento com Usuario - NOVO
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id", nullable = false, unique = true)
     private Usuario usuario;
-
-
-
-
 }

@@ -18,11 +18,13 @@ public class Cliente {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String nome;
+
     private String telefone;
 
-    @OneToOne
-    @JoinColumn(name = "usuario_id")
+    // Relacionamento com Usuario - NOVO
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id", nullable = false, unique = true)
     private Usuario usuario;
-
 }
