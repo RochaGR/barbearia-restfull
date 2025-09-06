@@ -20,6 +20,9 @@ public class Cliente {
 
     private String nome;
     private String telefone;
-    private String  email;
+
+    @OneToOne
+    @JoinColumn(name = "usuario_id")
+    private Usuario usuario;
 
 }

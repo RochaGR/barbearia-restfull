@@ -24,6 +24,10 @@ public class Barbeiro {
     // Deixei para quando criar vir false, por regras de negocio, no front terá a opção de selecionar
     //se ele vai estar ativo ou não
 
+    @OneToOne
+    @JoinColumn(name = "usuario_id")
+    private Usuario usuario;
+
 
 
 
