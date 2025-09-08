@@ -13,10 +13,9 @@ import lombok.Setter;
 public class ClienteRequestDTO {
 
     @Size(min = 2, max = 100, message = "Nome deve ter entre 2 e 100 caracteres")
-    private String nome; // REMOVIDO: @NotBlank
+    private String nome;
 
     @Size(min = 10, max = 15, message = "Telefone deve ter entre 10 e 15 caracteres")
-    private String telefone; // REMOVIDO: @NotBlank
-
+    private String telefone;
     private Long usuarioId;
 }
