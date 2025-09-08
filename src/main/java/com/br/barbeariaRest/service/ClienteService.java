@@ -1,37 +1,74 @@
 package com.br.barbeariaRest.service;
 
+import com.br.barbeariaRest.dto.mapper.ClienteMapper;
+import com.br.barbeariaRest.dto.request.ClienteRequestDTO;
+import com.br.barbeariaRest.dto.request.UsuarioRequestDTO;
+import com.br.barbeariaRest.dto.response.ClienteResponseDTO;
 import com.br.barbeariaRest.model.Cliente;
+import com.br.barbeariaRest.model.Usuario;
 import com.br.barbeariaRest.repository.ClienteRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.br.barbeariaRest.repository.UsuarioRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ClienteService {
 
-    public final ClienteRepository clienteRepository;
+    private final ClienteRepository clienteRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final ClienteMapper clienteMapper;
 
-    public ClienteService(ClienteRepository clienteRepository) {
-        this.clienteRepository = clienteRepository;
+    public ClienteResponseDTO findByUsuarioId(Long usuarioId) {
+        Cliente cliente = clienteRepository.findByUsuarioId(usuarioId)
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+        return clienteMapper.toResponseDTO(cliente);
     }
 
+    public ClienteResponseDTO updateByUsuarioId(Long usuarioId, ClienteRequestDTO dto) {
+        Cliente cliente = clienteRepository.findByUsuarioId(usuarioId)
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
-    public Cliente salvar(Cliente cliente) {
-        return clienteRepository.save(cliente);
+        clienteMapper.updateEntityFromDTO(dto, cliente);
+        Cliente atualizado = clienteRepository.save(cliente);
+
+        return clienteMapper.toResponseDTO(atualizado);
     }
 
-    public Cliente buscarPorId(Integer id) {
-        return clienteRepository.findById(id)
-                .orElse(null);
+    public ClienteResponseDTO create(Long usuarioId, ClienteRequestDTO dto) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        Cliente cliente = clienteMapper.toEntity(dto);
+        cliente.setUsuario(usuario);
+
+        Cliente salvo = clienteRepository.save(cliente);
+        return clienteMapper.toResponseDTO(salvo);
     }
 
-    public List<Cliente> listarTodos() {
-        return clienteRepository.findAll();
+    public ClienteResponseDTO criarClienteAutomatico(Long usuarioId, UsuarioRequestDTO usuarioDTO) {
+        // Cria o DTO do cliente com base nos dados do usuário
+        ClienteRequestDTO clienteDTO = new ClienteRequestDTO();
+        clienteDTO.setNome(usuarioDTO.getNome()); // CORRETO: pega do usuarioDTO
 
-    }
-    public void excluir(Integer id) {
-        clienteRepository.deleteById(id);
+        // Copia o telefone se existir, senão deixa como string vazia
+        clienteDTO.setTelefone(usuarioDTO.getTelefone() != null ? usuarioDTO.getTelefone() : "");
+
+        return create(usuarioId, clienteDTO);
     }
 
+    public List<ClienteResponseDTO> findAll() {
+        return clienteRepository.findAll()
+                .stream()
+                .map(clienteMapper::toResponseDTO)
+                .toList();
+    }
+
+    public ClienteResponseDTO findById(Long id) {
+        Cliente cliente = clienteRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+        return clienteMapper.toResponseDTO(cliente);
+    }
 }
