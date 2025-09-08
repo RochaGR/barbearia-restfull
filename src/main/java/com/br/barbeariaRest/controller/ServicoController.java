@@ -21,18 +21,18 @@ public class ServicoController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ServicoResponseDTO> criar(@RequestBody ServicoRequestDTO servicoDTO) {
-        ServicoResponseDTO salvo = service.create(servicoDTO);
+        ServicoResponseDTO salvo = service.criar(servicoDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(salvo);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ServicoResponseDTO> atualizar(@PathVariable Long id, @RequestBody ServicoRequestDTO servicoDTO) {
-        ServicoResponseDTO atualizado = service.update(id, servicoDTO);
+        ServicoResponseDTO atualizado = service.atualizar(id, servicoDTO);
         return ResponseEntity.ok(atualizado);
     }
 
-    @GetMapping // Público - todos podem ver serviços
+    @GetMapping
     public ResponseEntity<List<ServicoResponseDTO>> listar() {
         List<ServicoResponseDTO> lista = service.findAll();
         return ResponseEntity.ok(lista);
