@@ -2,6 +2,7 @@ package com.br.barbeariaRest.config;
 
 import com.br.barbeariaRest.security.JwtAuthenticationFilter;
 import com.br.barbeariaRest.security.CustomUserDetailsService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,15 +20,13 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
+@RequiredArgsConstructor
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-    @Autowired
-    private CustomUserDetailsService customUserDetailsService;
-
-    @Autowired
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomUserDetailsService customUserDetailsService;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -54,25 +53,27 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz
                         // Endpoints públicos
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/servicos").permitAll() // Listar serviços pode ser público
+                        .requestMatchers(HttpMethod.GET, "/servicos").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/servicos/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/barbeiros/ativos").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/barbeiros/{id}").permitAll()
 
                         // Endpoints para CLIENTES
-                        .requestMatchers(HttpMethod.GET, "/api/clientes/perfil").hasRole("CLIENTE")
-                        .requestMatchers(HttpMethod.PUT, "/api/clientes/perfil").hasRole("CLIENTE")
-                        .requestMatchers(HttpMethod.GET, "/api/barbeiros").hasAnyRole("CLIENTE", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/agendamentos").hasRole("CLIENTE")
-                        .requestMatchers(HttpMethod.GET, "/api/agendamentos/meus").hasRole("CLIENTE")
+                        .requestMatchers(HttpMethod.GET, "/clientes/meu-perfil").hasRole("CLIENTE")
+                        .requestMatchers(HttpMethod.PUT, "/clientes/meu-perfil").hasRole("CLIENTE")
 
                         // Endpoints para BARBEIROS
-                        .requestMatchers(HttpMethod.GET, "/api/barbeiros/perfil").hasRole("BARBEIRO")
-                        .requestMatchers(HttpMethod.PUT, "/api/barbeiros/perfil").hasRole("BARBEIRO")
-                        .requestMatchers(HttpMethod.GET, "/api/agendamentos/agenda").hasRole("BARBEIRO")
-                        .requestMatchers(HttpMethod.PUT, "/api/agendamentos/*/status").hasRole("BARBEIRO")
+                        .requestMatchers(HttpMethod.GET, "/barbeiros/meu-perfil").hasRole("BARBEIRO")
+                        .requestMatchers(HttpMethod.PUT, "/barbeiros/meu-perfil").hasRole("BARBEIRO")
 
                         // Endpoints para ADMIN
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/barbeiros").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/barbeiros").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/clientes").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/clientes/{id}").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/barbeiros").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/servicos").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/servicos/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/servicos/**").hasRole("ADMIN")
 
                         // Qualquer outro endpoint requer autenticação
                         .anyRequest().authenticated()

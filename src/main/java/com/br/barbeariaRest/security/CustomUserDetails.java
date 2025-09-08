@@ -1,6 +1,7 @@
 package com.br.barbeariaRest.security;
 
 import com.br.barbeariaRest.model.Usuario;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -8,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.Collections;
 
+@Getter
 public class CustomUserDetails implements UserDetails {
 
     private final Usuario usuario;
@@ -53,7 +55,4 @@ public class CustomUserDetails implements UserDetails {
         return usuario.isAtivo();
     }
 
-    public Usuario getUsuario() {
-        return usuario;
-    }
 }
