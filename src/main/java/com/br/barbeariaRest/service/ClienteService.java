@@ -27,7 +27,7 @@ public class ClienteService {
         return clienteMapper.toResponseDTO(cliente);
     }
 
-    public ClienteResponseDTO updateByUsuarioId(Long usuarioId, ClienteRequestDTO dto) {
+    public ClienteResponseDTO atualizarByUsuarioId(Long usuarioId, ClienteRequestDTO dto) {
         Cliente cliente = clienteRepository.findByUsuarioId(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
@@ -37,7 +37,7 @@ public class ClienteService {
         return clienteMapper.toResponseDTO(atualizado);
     }
 
-    public ClienteResponseDTO create(Long usuarioId, ClienteRequestDTO dto) {
+    public ClienteResponseDTO criar(Long usuarioId, ClienteRequestDTO dto) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
@@ -48,7 +48,7 @@ public class ClienteService {
         return clienteMapper.toResponseDTO(salvo);
     }
 
-    public ClienteResponseDTO criarClienteAutomatico(Long usuarioId, UsuarioRequestDTO usuarioDTO) {
+    public ClienteResponseDTO criarCliente(Long usuarioId, UsuarioRequestDTO usuarioDTO) {
         // Cria o DTO do cliente com base nos dados do usuário
         ClienteRequestDTO clienteDTO = new ClienteRequestDTO();
         clienteDTO.setNome(usuarioDTO.getNome()); // CORRETO: pega do usuarioDTO
@@ -56,7 +56,7 @@ public class ClienteService {
         // Copia o telefone se existir, senão deixa como string vazia
         clienteDTO.setTelefone(usuarioDTO.getTelefone() != null ? usuarioDTO.getTelefone() : "");
 
-        return create(usuarioId, clienteDTO);
+        return criar(usuarioId, clienteDTO);
     }
 
     public List<ClienteResponseDTO> findAll() {

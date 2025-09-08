@@ -37,7 +37,7 @@ public class BarbeiroService {
         return barbeiroMapper.toResponseDTO(barbeiro);
     }
 
-    public BarbeiroResponseDTO updateByUsuarioId(Long usuarioId, BarbeiroRequestDTO dto) {
+    public BarbeiroResponseDTO atualizarByUsuarioId(Long usuarioId, BarbeiroRequestDTO dto) {
         Barbeiro barbeiro = barbeiroRepository.findByUsuarioId(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Barbeiro não encontrado"));
 
@@ -53,7 +53,7 @@ public class BarbeiroService {
         return barbeiroMapper.toResponseDTO(barbeiro);
     }
 
-    public BarbeiroResponseDTO create(Long usuarioId, BarbeiroRequestDTO dto) {
+    public BarbeiroResponseDTO criar(Long usuarioId, BarbeiroRequestDTO dto) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
@@ -85,7 +85,7 @@ public class BarbeiroService {
 
         UsuarioResponseDTO usuarioCriado = authService.registrar(usuarioDTO);
 
-        return create(usuarioCriado.getId(), dto);
+        return criar(usuarioCriado.getId(), dto);
     }
 
 }

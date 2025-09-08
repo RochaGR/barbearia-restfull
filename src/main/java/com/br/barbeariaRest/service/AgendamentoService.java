@@ -100,7 +100,7 @@ public class AgendamentoService {
     }
 
     private boolean isStatusValido(String status) {
-        return List.of("AGENDADO", "CONFIRMADO", "EM_ANDAMENTO", "CONCLUIDO", "CANCELADO", "AUSENTE")
+        return List.of("AGENDADO", "CONFIRMADO", "CONCLUIDO", "CANCELADO")
                 .contains(status.toUpperCase());
     }
 
@@ -118,6 +118,7 @@ public class AgendamentoService {
         agendamento.setStatus("CANCELADO");
         agendamentoRepository.save(agendamento);
     }
+
     public List<AgendamentoResponseDTO> findAll() {
         return agendamentoRepository.findAll()
                 .stream()

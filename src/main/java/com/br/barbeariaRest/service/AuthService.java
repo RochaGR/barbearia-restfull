@@ -22,8 +22,8 @@ public class AuthService {
     private final UsuarioRepository usuarioRepository;
     private final UsuarioMapper usuarioMapper;
     private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil; // ADICIONE esta injeção
-    private final AuthenticationManager authenticationManager; // ADICIONE esta injeção
+    private final JwtUtil jwtUtil;
+    private final AuthenticationManager authenticationManager;
 
     public UsuarioResponseDTO registrar(UsuarioRequestDTO dto) {
         if (usuarioRepository.existsByEmail(dto.getEmail())) {
@@ -45,8 +45,6 @@ public class AuthService {
             throw new RuntimeException("Senha inválida");
         }
 
-        // AQUI ESTÁ A CORREÇÃO:
-        // 1. Criar o Authentication
         CustomUserDetails userDetails = new CustomUserDetails(usuario);
         Authentication authentication = new UsernamePasswordAuthenticationToken(
                 userDetails, null, userDetails.getAuthorities());
@@ -56,7 +54,7 @@ public class AuthService {
 
         // 3. Usar o mapper e depois setar o token
         LoginResponseDTO response = usuarioMapper.toLoginResponseDTO(usuario);
-        response.setToken(token); // ESTA LINHA ESTAVA FALTANDO!
+        response.setToken(token);
 
         return response;
     }

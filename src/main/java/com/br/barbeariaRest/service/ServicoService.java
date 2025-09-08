@@ -24,19 +24,13 @@ public class ServicoService {
                 .toList();
     }
 
-    public ServicoResponseDTO findById(Long id) {
-        Servico servico = servicoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
-        return servicoMapper.toResponseDTO(servico);
-    }
-
-    public ServicoResponseDTO create(ServicoRequestDTO dto) {
+    public ServicoResponseDTO criar(ServicoRequestDTO dto) {
         Servico servico = servicoMapper.toEntity(dto);
         Servico salvo = servicoRepository.save(servico);
         return servicoMapper.toResponseDTO(salvo);
     }
 
-    public ServicoResponseDTO update(Long id, ServicoRequestDTO dto) {
+    public ServicoResponseDTO atualizar(Long id, ServicoRequestDTO dto) {
         Servico servico = servicoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
 
