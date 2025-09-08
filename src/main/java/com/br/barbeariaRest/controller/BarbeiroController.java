@@ -32,7 +32,7 @@ public class BarbeiroController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody BarbeiroRequestDTO barbeiroDTO) {
         Long usuarioId = userDetails.getUsuario().getId();
-        BarbeiroResponseDTO atualizado = service.updateByUsuarioId(usuarioId, barbeiroDTO);
+        BarbeiroResponseDTO atualizado = service.atualizarByUsuarioId(usuarioId, barbeiroDTO);
         return ResponseEntity.ok(atualizado);
     }
 

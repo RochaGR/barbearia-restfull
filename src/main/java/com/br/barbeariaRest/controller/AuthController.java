@@ -37,7 +37,7 @@ public class AuthController {
             UsuarioResponseDTO usuarioCriado = authService.registrar(usuarioDTO);
 
             // 2. Cria automaticamente o perfil de cliente associado
-            clienteService.criarClienteAutomatico(usuarioCriado.getId(), usuarioDTO);
+            clienteService.criarCliente(usuarioCriado.getId(), usuarioDTO);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(usuarioCriado);
         } catch (RuntimeException e) {

@@ -25,7 +25,7 @@ public class ClienteController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody ClienteRequestDTO clienteDTO) {
         Long usuarioId = userDetails.getUsuario().getId();
-        ClienteResponseDTO atualizado = service.updateByUsuarioId(usuarioId, clienteDTO);
+        ClienteResponseDTO atualizado = service.atualizarByUsuarioId(usuarioId, clienteDTO);
         return ResponseEntity.ok(atualizado);
     }
 

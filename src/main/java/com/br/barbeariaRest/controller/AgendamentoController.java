@@ -6,6 +6,7 @@ import com.br.barbeariaRest.service.AgendamentoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,20 +30,18 @@ public class AgendamentoController {
     @GetMapping("/meus-agendamentos")
     public ResponseEntity<List<AgendamentoResponseDTO>> meusAgendamentos(@AuthenticationPrincipal Long usuarioId) {
         List<AgendamentoResponseDTO> agendamentos = service.findByClienteUsuarioId(usuarioId);
-        return ResponseEntity.ok(agendamentos);
+        return ResponseEntity.status(HttpStatus.OK).body(agendamentos);
     }
 
     @GetMapping("/barbeiro/meus-agendamentos")
     public ResponseEntity<List<AgendamentoResponseDTO>> agendamentosBarbeiro(@AuthenticationPrincipal Long usuarioId) {
         List<AgendamentoResponseDTO> agendamentos = service.findByBarbeiroUsuarioId(usuarioId);
-        return ResponseEntity.ok(agendamentos);
-    }
+        return ResponseEntity.status(HttpStatus.OK).body(agendamentos);    }
 
     @GetMapping("/{id}")
     public ResponseEntity<AgendamentoResponseDTO> buscarPorId(@PathVariable Long id) {
         AgendamentoResponseDTO agendamento = service.findById(id);
-        return ResponseEntity.ok(agendamento);
-    }
+        return ResponseEntity.status(HttpStatus.OK).body(agendamento);    }
 
     @PatchMapping("/{id}/status")
     public ResponseEntity<AgendamentoResponseDTO> atualizarStatus(
@@ -50,8 +49,7 @@ public class AgendamentoController {
             @RequestParam String status,
             @AuthenticationPrincipal Long barbeiroUsuarioId) {
         AgendamentoResponseDTO atualizado = service.atualizarStatus(id, status, barbeiroUsuarioId);
-        return ResponseEntity.ok(atualizado);
-    }
+        return ResponseEntity.status(HttpStatus.OK).body(atualizado);    }
 
     @DeleteMapping("/{id}/cancelar")
     public ResponseEntity<Void> cancelar(@PathVariable Long id, @AuthenticationPrincipal Long usuarioId) {
@@ -62,11 +60,10 @@ public class AgendamentoController {
     // Endpoints específicos para administração
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<AgendamentoResponseDTO>> listarTodos() {
-        // Este endpoint pode ser restrito para ADMIN
         List<AgendamentoResponseDTO> agendamentos = service.findAll();
-        return ResponseEntity.ok(agendamentos);
-    }
+        return ResponseEntity.status(HttpStatus.OK).body(agendamentos);    }
 
     @GetMapping("/cliente/{clienteId}")
     public ResponseEntity<List<AgendamentoResponseDTO>> listarPorCliente(@PathVariable Long clienteId) {
