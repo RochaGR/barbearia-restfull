@@ -1,70 +1,64 @@
 package com.br.barbeariaRest.controller;
 
-import com.br.barbeariaRest.model.Barbeiro;
+import com.br.barbeariaRest.dto.request.BarbeiroRequestDTO;
+import com.br.barbeariaRest.dto.response.BarbeiroResponseDTO;
+import com.br.barbeariaRest.security.CustomUserDetails;
 import com.br.barbeariaRest.service.BarbeiroService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/barbeiros")
+@RequiredArgsConstructor
 public class BarbeiroController {
 
     private final BarbeiroService service;
 
-    public BarbeiroController(BarbeiroService service) {
-        this.service = service;
-    }
-
     @PostMapping
-    public ResponseEntity<Barbeiro> criar(@RequestBody Barbeiro barbeiro) {
-        Barbeiro salvo = service.salvar(barbeiro);
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<BarbeiroResponseDTO> criar(@RequestBody BarbeiroRequestDTO barbeiroDTO) {
+        BarbeiroResponseDTO salvo = service.criarBarbeiro(barbeiroDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(salvo);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Barbeiro> atualizar(@PathVariable int id, @RequestBody Barbeiro barbeiro) {
-        Barbeiro barbeiroBusca = service.buscarPorId(id);
-        if (barbeiroBusca == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        if (barbeiro == null) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        barbeiroBusca.setNome(barbeiro.getNome());
-        barbeiroBusca.setAtivo(barbeiro.isAtivo());
-        barbeiroBusca.setEspecialidades(barbeiro.getEspecialidades());
-
-        return ResponseEntity.ok(service.salvar(barbeiroBusca));
+    @PutMapping("/meu-perfil")
+    public ResponseEntity<BarbeiroResponseDTO> atualizarMeuPerfil(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody BarbeiroRequestDTO barbeiroDTO) {
+        Long usuarioId = userDetails.getUsuario().getId();
+        BarbeiroResponseDTO atualizado = service.updateByUsuarioId(usuarioId, barbeiroDTO);
+        return ResponseEntity.ok(atualizado);
     }
 
-    @GetMapping
-    public ResponseEntity<List<Barbeiro>> listar() {
-        List<Barbeiro> lista = service.listarTodos();
-        return ResponseEntity.status(HttpStatus.OK).body(lista);
+    @GetMapping("/ativos")
+    public ResponseEntity<List<BarbeiroResponseDTO>> listarAtivos() {
+        List<BarbeiroResponseDTO> lista = service.findAllAtivos();
+        return ResponseEntity.ok(lista);
+    }
+
+    @GetMapping("/meu-perfil")
+    public ResponseEntity<BarbeiroResponseDTO> meuPerfil(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long usuarioId = userDetails.getUsuario().getId();
+        BarbeiroResponseDTO barbeiro = service.findByUsuarioId(usuarioId);
+        return ResponseEntity.ok(barbeiro);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Barbeiro> buscarPorId(@PathVariable int id) {
-        Barbeiro barbeiro = service.buscarPorId(id);
-        if (barbeiro == null) {
-            return ResponseEntity.notFound().build();
-        } else {
-            return ResponseEntity.status(HttpStatus.OK).body(barbeiro);
-        }
+    public ResponseEntity<BarbeiroResponseDTO> buscarPorId(@PathVariable Long id) {
+        BarbeiroResponseDTO barbeiro = service.findById(id);
+        return ResponseEntity.ok(barbeiro);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletarPorId(@PathVariable int id) {
-        Barbeiro barbeiro = service.buscarPorId(id);
-        if (barbeiro == null) {
-            return ResponseEntity.notFound().build();
-        }
-        service.excluir(id);
-        return ResponseEntity.noContent().build();
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<BarbeiroResponseDTO>> listarTodos() {
+        List<BarbeiroResponseDTO> lista = service.findAll();
+        return ResponseEntity.ok(lista);
     }
 }

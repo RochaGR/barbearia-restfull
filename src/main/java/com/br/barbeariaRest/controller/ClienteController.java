@@ -1,69 +1,52 @@
 package com.br.barbeariaRest.controller;
 
-import com.br.barbeariaRest.model.Cliente;
+import com.br.barbeariaRest.dto.request.ClienteRequestDTO;
+import com.br.barbeariaRest.dto.response.ClienteResponseDTO;
+import com.br.barbeariaRest.security.CustomUserDetails;
 import com.br.barbeariaRest.service.ClienteService;
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/clientes")
+@RequiredArgsConstructor
 public class ClienteController {
 
     private final ClienteService service;
 
-    public ClienteController(ClienteService service) {
-        this.service = service;
+
+    @PutMapping("/meu-perfil")
+    public ResponseEntity<ClienteResponseDTO> atualizarMeuPerfil(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody ClienteRequestDTO clienteDTO) {
+        Long usuarioId = userDetails.getUsuario().getId();
+        ClienteResponseDTO atualizado = service.updateByUsuarioId(usuarioId, clienteDTO);
+        return ResponseEntity.ok(atualizado);
     }
 
-    @PostMapping
-    public ResponseEntity<Cliente> criar(@RequestBody Cliente cliente){
-        Cliente salvo = service.salvar(cliente);
-        return ResponseEntity.status(HttpStatus.CREATED).body(salvo);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<Cliente> atualizar(@PathVariable Integer id, @RequestBody Cliente cliente) {
-        Cliente clienteExistente = service.buscarPorId(id);
-        if (clienteExistente == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        if (cliente == null || cliente.getNome() == null) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        clienteExistente.setNome(cliente.getNome());
-        clienteExistente.setEmail(cliente.getEmail());
-        clienteExistente.setTelefone(cliente.getTelefone());
-
-        return ResponseEntity.ok(service.salvar(clienteExistente));
-    }
-
-    @GetMapping
-    public ResponseEntity<List<Cliente>> listar(){
-        List<Cliente> lista = service.listarTodos();
-        return ResponseEntity.status(HttpStatus.OK).body(lista);
+    @GetMapping("/meu-perfil")
+    public ResponseEntity<ClienteResponseDTO> meuPerfil(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long usuarioId = userDetails.getUsuario().getId();
+        ClienteResponseDTO cliente = service.findByUsuarioId(usuarioId);
+        return ResponseEntity.ok(cliente);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Cliente> buscarPorId(@PathVariable Integer id){
-        Cliente cliente = service.buscarPorId(id);
-        if(cliente == null){
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(cliente);
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ClienteResponseDTO> buscarPorId(@PathVariable Long id) {
+        ClienteResponseDTO cliente = service.findById(id);
+        return ResponseEntity.ok(cliente);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletarPorId(@PathVariable Integer id){
-        Cliente cliente = service.buscarPorId(id);
-        if(cliente == null){
-            return ResponseEntity.notFound().build();
-        }
-        service.excluir(id);
-        return ResponseEntity.noContent().build();
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<ClienteResponseDTO>> listarTodos() {
+        List<ClienteResponseDTO> lista = service.findAll();
+        return ResponseEntity.ok(lista);
     }
 }
