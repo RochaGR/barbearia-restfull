@@ -37,6 +37,7 @@ public class BarbeiroController {
     }
 
     @GetMapping("/ativos")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<BarbeiroResponseDTO>> listarAtivos() {
         List<BarbeiroResponseDTO> lista = service.findAllAtivos();
         return ResponseEntity.ok(lista);
