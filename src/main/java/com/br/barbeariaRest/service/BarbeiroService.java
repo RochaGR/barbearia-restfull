@@ -5,6 +5,7 @@ import com.br.barbeariaRest.dto.request.BarbeiroRequestDTO;
 import com.br.barbeariaRest.dto.request.UsuarioRequestDTO;
 import com.br.barbeariaRest.dto.response.BarbeiroResponseDTO;
 import com.br.barbeariaRest.dto.response.UsuarioResponseDTO;
+import com.br.barbeariaRest.enums.Role;
 import com.br.barbeariaRest.model.Barbeiro;
 import com.br.barbeariaRest.model.Usuario;
 import com.br.barbeariaRest.repository.BarbeiroRepository;
@@ -53,24 +54,6 @@ public class BarbeiroService {
         return barbeiroMapper.toResponseDTO(barbeiro);
     }
 
-    public BarbeiroResponseDTO criar(Long usuarioId, BarbeiroRequestDTO dto) {
-        Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-        Barbeiro barbeiro = barbeiroMapper.toEntity(dto);
-        barbeiro.setUsuario(usuario);
-
-        Barbeiro salvo = barbeiroRepository.save(barbeiro);
-        return barbeiroMapper.toResponseDTO(salvo);
-    }
-
-    public List<BarbeiroResponseDTO> findAll() {
-        return barbeiroRepository.findAll()
-                .stream()
-                .map(barbeiroMapper::toResponseDTO)
-                .toList();
-    }
-
     @Transactional
     public BarbeiroResponseDTO criarBarbeiro(BarbeiroRequestDTO dto) {
         if (usuarioRepository.existsByEmail(dto.getEmail())) {
@@ -80,12 +63,29 @@ public class BarbeiroService {
         UsuarioRequestDTO usuarioDTO = new UsuarioRequestDTO();
         usuarioDTO.setEmail(dto.getEmail());
         usuarioDTO.setSenha(dto.getSenha());
-        usuarioDTO.setRole("BARBEIRO");
+        usuarioDTO.setRole(Role.BARBEIRO.name());
         usuarioDTO.setNome(dto.getNome());
 
         UsuarioResponseDTO usuarioCriado = authService.registrar(usuarioDTO);
 
-        return criar(usuarioCriado.getId(), dto);
+        Usuario usuario = usuarioRepository.findById(usuarioCriado.getId())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado após criação"));
+
+        Barbeiro barbeiro = barbeiroMapper.toEntity(dto);
+        barbeiro.setUsuario(usuario);
+        barbeiro.setAtivo(true);
+
+        Barbeiro barbeiroSalvo = barbeiroRepository.save(barbeiro);
+
+        return barbeiroMapper.toResponseDTO(barbeiroSalvo);
+    }
+
+
+    public List<BarbeiroResponseDTO> findAll() {
+        return barbeiroRepository.findAll()
+                .stream()
+                .map(barbeiroMapper::toResponseDTO)
+                .toList();
     }
 
 }
