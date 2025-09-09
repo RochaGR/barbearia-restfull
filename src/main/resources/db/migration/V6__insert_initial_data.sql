@@ -1,5 +1,5 @@
 -- Usuário admin padrão
 INSERT INTO usuarios (email, senha, role, ativo) VALUES
-    ('admin@barbearia.com', '$2a$10$N.HzGNVoPxzVmZ7L1.hLiOhyVY3JLxQ6Qe.P8Q5PgD8Jy7Z3Nm4xC', 'ADMIN', true);
+    ('admin@barbearia.com', '$2a$10$rRH9AwR78ydkvxbSuUrPw.0zPi1x2N8XJe6iOkO374CVqEu/9kSJi', 'ADMIN', true);
 -- Senha: admin123
 

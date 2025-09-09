@@ -2,6 +2,7 @@ package com.br.barbeariaRest.controller;
 
 import com.br.barbeariaRest.dto.request.AgendamentoRequestDTO;
 import com.br.barbeariaRest.dto.response.AgendamentoResponseDTO;
+import com.br.barbeariaRest.security.CustomUserDetails;
 import com.br.barbeariaRest.service.AgendamentoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,8 +22,10 @@ public class AgendamentoController {
 
     @PostMapping
     public ResponseEntity<AgendamentoResponseDTO> criar(
-            @AuthenticationPrincipal Long usuarioId,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody AgendamentoRequestDTO agendamentoDTO) {
+
+        Long usuarioId = userDetails.getUsuario().getId(); //  Obter ID do usuário autenticado
         AgendamentoResponseDTO salvo = service.criarAgendamento(usuarioId, agendamentoDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(salvo);
     }
