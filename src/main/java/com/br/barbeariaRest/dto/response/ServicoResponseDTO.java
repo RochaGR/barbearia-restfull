@@ -18,4 +18,6 @@ public class ServicoResponseDTO {
     private BigDecimal preco;
     private Integer duracaoMinutos;
     private boolean ativo;
+
+
 }

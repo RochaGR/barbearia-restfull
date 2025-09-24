@@ -3,46 +3,81 @@ package com.br.barbeariaRest.controller;
 import com.br.barbeariaRest.dto.request.ServicoRequestDTO;
 import com.br.barbeariaRest.dto.response.ServicoResponseDTO;
 import com.br.barbeariaRest.service.ServicoService;
-import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/servicos")
-@RequiredArgsConstructor
 public class ServicoController {
 
-    private final ServicoService service;
+    @Autowired
+    private ServicoService service;
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ServicoResponseDTO> criar(@RequestBody ServicoRequestDTO servicoDTO) {
-        ServicoResponseDTO salvo = service.criar(servicoDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(salvo);
+    public ResponseEntity<?> criar(@Valid @RequestBody ServicoRequestDTO dto) {
+        try {
+            ServicoResponseDTO servico = service.criar(dto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(servico);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Erro ao criar serviço: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> buscarPorId(@PathVariable Long id) {
+        ServicoResponseDTO servico = service.buscarPorId(id);
+        if (servico == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(servico);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ServicoResponseDTO> atualizar(@PathVariable Long id, @RequestBody ServicoRequestDTO servicoDTO) {
-        ServicoResponseDTO atualizado = service.atualizar(id, servicoDTO);
-        return ResponseEntity.ok(atualizado);
+    public ResponseEntity<?> atualizar(@PathVariable Long id, @Valid @RequestBody ServicoRequestDTO dto) {
+        try {
+            ServicoResponseDTO servico = service.atualizar(id, dto);
+            return ResponseEntity.ok(servico);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Erro ao atualizar serviço: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deletar(@PathVariable Long id) {
+        try {
+            service.excluir(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Erro ao deletar serviço: " + e.getMessage());
+        }
     }
 
     @GetMapping
-    public ResponseEntity<List<ServicoResponseDTO>> listar() {
-        List<ServicoResponseDTO> lista = service.findAll();
-        return ResponseEntity.ok(lista);
+    public ResponseEntity<List<ServicoResponseDTO>> buscarTodos() {
+        return ResponseEntity.ok(service.buscarTodos());
     }
 
+    @GetMapping("/ativos")
+    public ResponseEntity<List<ServicoResponseDTO>> buscarAtivos() {
+        return ResponseEntity.ok(service.buscarAtivos());
+    }
 
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')") //
-    public ResponseEntity<Void> deletarPorId(@PathVariable Long id) {
-        service.delete(id);
-        return ResponseEntity.noContent().build();
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<?> alterarStatus(@PathVariable Long id) {
+        try {
+            ServicoResponseDTO servico = service.ativarDesativar(id);
+            return ResponseEntity.ok(servico);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Erro ao alterar status do serviço: " + e.getMessage());
+        }
     }
 }
