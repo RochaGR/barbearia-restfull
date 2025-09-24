@@ -17,5 +17,6 @@ public class ClienteRequestDTO {
 
     @Size(min = 10, max = 15, message = "Telefone deve ter entre 10 e 15 caracteres")
     private String telefone;
-    private Long usuarioId;
+
+
 }
