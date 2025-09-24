@@ -10,6 +10,5 @@ import java.util.Optional;
 
 @Repository
 public interface BarbeiroRepository extends JpaRepository<Barbeiro, Long> {
-    List<Barbeiro> findByAtivoTrue();
-    Optional<Barbeiro> findByUsuarioId(Long usuarioId);
+    Optional<Barbeiro> findById(Long id);
 }

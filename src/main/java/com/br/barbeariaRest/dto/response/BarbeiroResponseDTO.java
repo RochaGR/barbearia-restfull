@@ -13,6 +13,7 @@ public class BarbeiroResponseDTO {
     private Long id;
     private String nome;
     private String especialidades;
+    private String telefone;
     private boolean ativo;
-    private String email;
+
 }

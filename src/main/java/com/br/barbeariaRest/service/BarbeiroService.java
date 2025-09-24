@@ -1,91 +1,90 @@
 package com.br.barbeariaRest.service;
 
-import com.br.barbeariaRest.dto.mapper.BarbeiroMapper;
-import com.br.barbeariaRest.dto.request.BarbeiroRequestDTO;
-import com.br.barbeariaRest.dto.request.UsuarioRequestDTO;
+import com.br.barbeariaRest.dto.request.BarbeiroRegistroDTO;
 import com.br.barbeariaRest.dto.response.BarbeiroResponseDTO;
-import com.br.barbeariaRest.dto.response.UsuarioResponseDTO;
-import com.br.barbeariaRest.enums.Role;
+import com.br.barbeariaRest.dto.mapper.BarbeiroMapper;
 import com.br.barbeariaRest.model.Barbeiro;
+import com.br.barbeariaRest.model.Role;
 import com.br.barbeariaRest.model.Usuario;
+
 import com.br.barbeariaRest.repository.BarbeiroRepository;
+import com.br.barbeariaRest.repository.RoleRepository;
 import com.br.barbeariaRest.repository.UsuarioRepository;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @Service
-@RequiredArgsConstructor
 public class BarbeiroService {
 
-    private final BarbeiroRepository barbeiroRepository;
-    private final UsuarioRepository usuarioRepository;
-    private final BarbeiroMapper barbeiroMapper;
-    private final AuthService authService;
+    @Autowired
+    private BarbeiroRepository repository;
 
-    public List<BarbeiroResponseDTO> findAllAtivos() {
-        return barbeiroRepository.findByAtivoTrue()
-                .stream()
-                .map(barbeiroMapper::toResponseDTO)
-                .toList();
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private RoleRepository roleRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    public BarbeiroResponseDTO salvar(BarbeiroResponseDTO dto) {
+        Barbeiro barbeiro = BarbeiroMapper.toEntity(dto);
+        Barbeiro salvo = repository.save(barbeiro);
+        return BarbeiroMapper.toDto(salvo);
     }
 
-    public BarbeiroResponseDTO findByUsuarioId(Long usuarioId) {
-        Barbeiro barbeiro = barbeiroRepository.findByUsuarioId(usuarioId)
-                .orElseThrow(() -> new RuntimeException("Barbeiro não encontrado"));
-        return barbeiroMapper.toResponseDTO(barbeiro);
+    public void excluir(Long id) {
+        repository.deleteById(id);
     }
 
-    public BarbeiroResponseDTO atualizarByUsuarioId(Long usuarioId, BarbeiroRequestDTO dto) {
-        Barbeiro barbeiro = barbeiroRepository.findByUsuarioId(usuarioId)
-                .orElseThrow(() -> new RuntimeException("Barbeiro não encontrado"));
-
-        barbeiroMapper.updateEntityFromDTO(dto, barbeiro);
-        Barbeiro atualizado = barbeiroRepository.save(barbeiro);
-
-        return barbeiroMapper.toResponseDTO(atualizado);
+    public BarbeiroResponseDTO buscarPorId(Long id) {
+        Optional<Barbeiro> barbeiro = repository.findById(id);
+        return barbeiro.map(BarbeiroMapper::toDto).orElse(null);
     }
 
-    public BarbeiroResponseDTO findById(Long id) {
-        Barbeiro barbeiro = barbeiroRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Barbeiro não encontrado"));
-        return barbeiroMapper.toResponseDTO(barbeiro);
+    public List<BarbeiroResponseDTO> buscarTodos() {
+        List<Barbeiro> barbeiros = repository.findAll();
+        return barbeiros.stream().map(BarbeiroMapper::toDto).toList();
     }
 
     @Transactional
-    public BarbeiroResponseDTO criarBarbeiro(BarbeiroRequestDTO dto) {
-        if (usuarioRepository.existsByEmail(dto.getEmail())) {
-            throw new RuntimeException("Email já cadastrado");
+    public BarbeiroResponseDTO registrarBarbeiro(BarbeiroRegistroDTO dto) {
+
+        if (usuarioRepository.findByUsername(dto.getUsername()).isPresent()) {
+            throw new RuntimeException("Username já existe!");
         }
 
-        UsuarioRequestDTO usuarioDTO = new UsuarioRequestDTO();
-        usuarioDTO.setEmail(dto.getEmail());
-        usuarioDTO.setSenha(dto.getSenha());
-        usuarioDTO.setRole(Role.BARBEIRO.name());
-        usuarioDTO.setNome(dto.getNome());
+        Usuario usuario = new Usuario();
+        usuario.setUsername(dto.getUsername());
+        usuario.setPassword(passwordEncoder.encode(dto.getPassword()));
 
-        UsuarioResponseDTO usuarioCriado = authService.registrar(usuarioDTO);
+        Role barbeiroRole = roleRepository.findByNome("BARBEIRO")
+                .orElseThrow(() -> new RuntimeException("Role BARBEIRO não encontrada"));
+        usuario.setRoles(Set.of(barbeiroRole));
+        Usuario usuarioSalvo = usuarioRepository.save(usuario);
 
-        Usuario usuario = usuarioRepository.findById(usuarioCriado.getId())
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado após criação"));
+        Barbeiro barbeiro = new Barbeiro();
+        barbeiro.setNome(dto.getNome());
+        barbeiro.setEspecialidades(dto.getEspecialidades());
+        barbeiro.setTelefone(dto.getTelefone());
+        barbeiro.setAtivo(dto.isAtivo());
+        barbeiro.setUsuario(usuarioSalvo);
 
-        Barbeiro barbeiro = barbeiroMapper.toEntity(dto);
-        barbeiro.setUsuario(usuario);
-        barbeiro.setAtivo(true);
-
-        Barbeiro barbeiroSalvo = barbeiroRepository.save(barbeiro);
-
-        return barbeiroMapper.toResponseDTO(barbeiroSalvo);
+        Barbeiro barbeiroSalvo = repository.save(barbeiro);
+        return BarbeiroMapper.toDto(barbeiroSalvo);
     }
 
-
-    public List<BarbeiroResponseDTO> findAll() {
-        return barbeiroRepository.findAll()
-                .stream()
-                .map(barbeiroMapper::toResponseDTO)
-                .toList();
+    public BarbeiroResponseDTO buscarPorUsername(String username) {
+        return usuarioRepository.findByUsername(username)
+                .map(Usuario::getBarbeiro)
+                .map(BarbeiroMapper::toDto)
+                .orElse(null);
     }
-
 }
