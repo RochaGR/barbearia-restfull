@@ -1,67 +1,38 @@
 package com.br.barbeariaRest.dto.mapper;
 
-import com.br.barbeariaRest.dto.request.AgendamentoRequestDTO;
 import com.br.barbeariaRest.dto.response.AgendamentoResponseDTO;
 import com.br.barbeariaRest.model.Agendamento;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class AgendamentoMapper {
 
-    @Autowired
-    private ClienteMapper clienteMapper;
-
-    @Autowired
-    private  BarbeiroMapper barbeiroMapper;
-
-    @Autowired
-    private ServicoMapper servicoMapper;
-
-    public Agendamento toEntity(AgendamentoRequestDTO dto) {
-        if (dto == null) return null;
-
-        Agendamento agendamento = new Agendamento();
-        agendamento.setDataHora(dto.getDataHora());
-        agendamento.setObservacoes(dto.getObservacoes());
-        agendamento.setStatus("AGENDADO");
-
-        // Os relacionamentos (cliente, barbeiro, servico) devem ser setados no service
-        // usando os IDs do DTO
-
-        return agendamento;
-    }
-
-    public AgendamentoResponseDTO toResponseDTO(Agendamento agendamento) {
+    public static AgendamentoResponseDTO toDto(Agendamento agendamento) {
         if (agendamento == null) return null;
 
-        AgendamentoResponseDTO dto = new AgendamentoResponseDTO();
-        dto.setId(agendamento.getId());
-        dto.setDataHora(agendamento.getDataHora());
-        dto.setStatus(agendamento.getStatus());
-        dto.setObservacoes(agendamento.getObservacoes());
-
-        // Mapear relacionamentos
-        if (agendamento.getCliente() != null) {
-            dto.setCliente(clienteMapper.toResponseDTO(agendamento.getCliente()));
-        }
-
-        if (agendamento.getBarbeiro() != null) {
-            dto.setBarbeiro(barbeiroMapper.toResponseDTO(agendamento.getBarbeiro()));
-        }
-
-        if (agendamento.getServico() != null) {
-            dto.setServico(servicoMapper.toResponseDTO(agendamento.getServico()));
-        }
-
-        return dto;
+        return new AgendamentoResponseDTO(
+                agendamento.getId(),
+                ClienteMapper.toDto(agendamento.getCliente()),
+                BarbeiroMapper.toDto(agendamento.getBarbeiro()),
+                ServicoMapper.toDto(agendamento.getServico()),
+                agendamento.getDataHora(),
+                agendamento.getStatus(),
+                agendamento.getObservacoes()
+        );
     }
 
-    public void updateEntityFromDTO(AgendamentoRequestDTO dto, Agendamento agendamento) {
-        if (dto == null || agendamento == null) return;
+    public static Agendamento toEntity(AgendamentoResponseDTO agendamentoResponseDTO) {
+        if (agendamentoResponseDTO == null) return null;
 
-        agendamento.setDataHora(dto.getDataHora());
-        agendamento.setObservacoes(dto.getObservacoes());
-        // Os relacionamentos devem ser atualizados no service
+        Agendamento agendamento = new Agendamento();
+        agendamento.setId(agendamentoResponseDTO.getId());
+        agendamento.setCliente(ClienteMapper.toEntity(agendamentoResponseDTO.getCliente()));
+        agendamento.setBarbeiro(BarbeiroMapper.toEntity(agendamentoResponseDTO.getBarbeiro()));
+        agendamento.setServico(ServicoMapper.toEntity(agendamentoResponseDTO.getServico()));
+        agendamento.setDataHora(agendamentoResponseDTO.getDataHora());
+        agendamento.setStatus(agendamentoResponseDTO.getStatus());
+        agendamento.setObservacoes(agendamentoResponseDTO.getObservacoes());
+
+        return agendamento;
     }
 }
