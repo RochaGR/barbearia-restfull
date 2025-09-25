@@ -55,7 +55,7 @@ Um sistema completo para gerenciamento de barbearias desenvolvido em Spring Boot
 
 ### 1. Clone o repositório
 ```bash
-git clone https://github.com/seu-usuario/barbearia-rest.git
+git clone https://github.com/RochaGR/barbearia-rest.git
 cd barbearia-rest
 ```
 
