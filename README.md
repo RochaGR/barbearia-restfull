@@ -230,9 +230,51 @@ spring.jackson.date-format=yyyy-MM-dd HH:mm:ss
 
 ## 📝 Exemplo de Uso
 
-### 1. Cadastrar um Cliente
-```bash
-curl -X POST http://localhost:8080/auth/registro-cliente \
+📝 Exemplo de Uso Completo
+Fluxo Típico de Uso:
+1. Login como Admin (configuração inicial)
+bashcurl -X POST http://localhost:8080/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "admin",
+    "password": "admin123"
+  }'
+2. Cadastrar um Barbeiro (como admin)
+bashcurl -X POST http://localhost:8080/auth/registro-barbeiro \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer TOKEN_ADMIN" \
+  -d '{
+    "username": "barbeiro@email.com",
+    "password": "123456",
+    "nome": "Carlos Silva",
+    "especialidades": "Corte masculino, Barba",
+    "telefone": "(11) 98888-8888",
+    "ativo": true
+  }'
+3. Criar um Serviço (como admin/barbeiro)
+bashcurl -X POST http://localhost:8080/servicos \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer TOKEN_ADMIN" \
+  -d '{
+    "nome": "Corte Masculino",
+    "descricao": "Corte tradicional masculino",
+    "preco": 25.00,
+    "duracaoMinutos": 30,
+    "ativo": true
+  }'
+4. Configurar Horário do Barbeiro (como admin)
+bashcurl -X POST http://localhost:8080/barbeiros/1/horarios \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer TOKEN_ADMIN" \
+  -d '{
+    "diaSemana": 1,
+    "horaInicio": "08:00",
+    "horaFim": "18:00",
+    "pausaInicio": "12:00",
+    "pausaFim": "13:00"
+  }'
+5. Cadastrar um Cliente
+bashcurl -X POST http://localhost:8080/auth/registro-cliente \
   -H "Content-Type: application/json" \
   -d '{
     "username": "joao@email.com",
@@ -240,31 +282,27 @@ curl -X POST http://localhost:8080/auth/registro-cliente \
     "nome": "João Silva",
     "telefone": "(11) 99999-9999"
   }'
-```
-
-### 2. Fazer Login
-```bash
-curl -X POST http://localhost:8080/auth/login \
+6. Login como Cliente
+bashcurl -X POST http://localhost:8080/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "username": "joao@email.com",
     "password": "123456"
   }'
-```
-
-### 3. Criar um Agendamento
-```bash
-curl -X POST http://localhost:8080/agendamentos \
+7. Consultar Horários Disponíveis
+bashcurl -X GET "http://localhost:8080/barbeiros/1/horarios/disponiveis?data=2024-09-25" \
+  -H "Authorization: Bearer TOKEN_CLIENTE"
+8. Criar um Agendamento
+bashcurl -X POST http://localhost:8080/agendamentos \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer SEU_TOKEN_JWT" \
+  -H "Authorization: Bearer TOKEN_CLIENTE" \
   -d '{
     "clienteId": 1,
     "barbeiroId": 1,
     "servicoId": 1,
-    "dataHora": "2024-01-15T14:30:00",
+    "dataHora": "2024-09-25T14:30:00",
     "observacoes": "Corte baixo nas laterais"
   }'
-```
 
 ## 🤝 Contribuição
 
@@ -274,15 +312,13 @@ curl -X POST http://localhost:8080/agendamentos \
 4. Push para a branch (`git push origin feature/MinhaFeature`)
 5. Abra um Pull Request
 
-## 📄 Licença
 
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
 ## 📞 Contato
 
-Seu Nome - [@seu_twitter](https://twitter.com/seu_twitter) - seuemail@email.com
+Gustavo Garcia Rocha - gutop.rocha@gmail.com
 
-Link do Projeto: [https://github.com/seu-usuario/barbearia-rest](https://github.com/seu-usuario/barbearia-rest)
+Link do Projeto: https://github.com/RochaGR/barbearia-restfull
 
 ---
 
