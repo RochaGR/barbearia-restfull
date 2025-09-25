@@ -12,6 +12,7 @@ import com.br.barbeariaRest.repository.RoleRepository;
 import com.br.barbeariaRest.repository.UsuarioRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -86,5 +87,17 @@ public class BarbeiroService {
                 .map(Usuario::getBarbeiro)
                 .map(BarbeiroMapper::toDto)
                 .orElse(null);
+    }
+
+
+    //Verifica se o usuário logado é proprietário do barbeiro
+    //Usado para autorização em @PreAuthorize
+
+    public boolean isOwner(Long barbeiroId, String username) {
+        return usuarioRepository.findByUsername(username)
+                .map(Usuario::getBarbeiro)
+                .map(Barbeiro::getId)
+                .map(id -> id.equals(barbeiroId))
+                .orElse(false);
     }
 }

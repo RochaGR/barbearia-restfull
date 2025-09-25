@@ -11,6 +11,7 @@ import com.br.barbeariaRest.repository.AgendamentoRepository;
 import com.br.barbeariaRest.repository.ClienteRepository;
 import com.br.barbeariaRest.repository.BarbeiroRepository;
 import com.br.barbeariaRest.repository.ServicoRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class AgendamentoService {
 
     @Autowired
@@ -33,89 +35,123 @@ public class AgendamentoService {
     @Autowired
     private ServicoRepository servicoRepository;
 
+    @Autowired
+    private DisponibilidadeService disponibilidadeService;
+
     public AgendamentoResponseDTO criar(AgendamentoRequestDTO dto) {
-        // Validar se cliente existe
-        Cliente cliente = clienteRepository.findById(dto.getClienteId())
-                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+        log.info("Criando agendamento para cliente={}, barbeiro={}, servico={}",
+                dto.getClienteId(), dto.getBarbeiroId(), dto.getServicoId());
 
-        // Validar se barbeiro existe
-        Barbeiro barbeiro = barbeiroRepository.findById(dto.getBarbeiroId())
-                .orElseThrow(() -> new RuntimeException("Barbeiro não encontrado"));
-
-        // Validar se serviço existe
-        Servico servico = servicoRepository.findById(dto.getServicoId())
-                .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
-
-        // Validar se barbeiro está ativo
-        if (!barbeiro.isAtivo()) {
-            throw new RuntimeException("Barbeiro não está ativo");
-        }
-
-        // Validar se serviço está ativo
-        if (!servico.isAtivo()) {
-            throw new RuntimeException("Serviço não está ativo");
-        }
-
-        // Criar agendamento
-        Agendamento agendamento = new Agendamento();
-        agendamento.setCliente(cliente);
-        agendamento.setBarbeiro(barbeiro);
-        agendamento.setServico(servico);
-        agendamento.setDataHora(dto.getDataHora());
-        agendamento.setStatus("AGENDADO");
-        agendamento.setObservacoes(dto.getObservacoes());
-
-        Agendamento agendamentoSalvo = repository.save(agendamento);
-        return AgendamentoMapper.toDto(agendamentoSalvo);
-    }
-
-    public AgendamentoResponseDTO atualizar(Long id, AgendamentoRequestDTO dto) {
-        Optional<Agendamento> agendamentoExistente = repository.findById(id);
-        if (agendamentoExistente.isEmpty()) {
-            throw new RuntimeException("Agendamento não encontrado");
-        }
-
-        Agendamento agendamento = agendamentoExistente.get();
-
-        // Validar e atualizar cliente se necessário
-        if (!agendamento.getCliente().getId().equals(dto.getClienteId())) {
+        try {
+            // Validar se cliente existe
             Cliente cliente = clienteRepository.findById(dto.getClienteId())
                     .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
-            agendamento.setCliente(cliente);
-        }
 
-        // Validar e atualizar barbeiro se necessário
-        if (!agendamento.getBarbeiro().getId().equals(dto.getBarbeiroId())) {
+            // Validar se barbeiro existe
             Barbeiro barbeiro = barbeiroRepository.findById(dto.getBarbeiroId())
                     .orElseThrow(() -> new RuntimeException("Barbeiro não encontrado"));
+
+            // Validar se serviço existe
+            Servico servico = servicoRepository.findById(dto.getServicoId())
+                    .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
+
+            // Validar se barbeiro está ativo
             if (!barbeiro.isAtivo()) {
                 throw new RuntimeException("Barbeiro não está ativo");
             }
-            agendamento.setBarbeiro(barbeiro);
-        }
 
-        // Validar e atualizar serviço se necessário
-        if (!agendamento.getServico().getId().equals(dto.getServicoId())) {
+            // Validar se serviço está ativo
+            if (!servico.isAtivo()) {
+                throw new RuntimeException("Serviço não está ativo");
+            }
+
+            // NOVA VALIDAÇÃO: Verificar disponibilidade completa
+            if (!disponibilidadeService.isHorarioDisponivel(dto.getBarbeiroId(), dto.getDataHora(),
+                    servico.getDuracaoMinutos())) {
+                throw new RuntimeException("Horário não disponível para agendamento");
+            }
+
+            // Criar agendamento
+            Agendamento agendamento = new Agendamento();
+            agendamento.setCliente(cliente);
+            agendamento.setBarbeiro(barbeiro);
+            agendamento.setServico(servico);
+            agendamento.setDataHora(dto.getDataHora());
+            agendamento.setStatus("AGENDADO");
+            agendamento.setObservacoes(dto.getObservacoes());
+
+            Agendamento agendamentoSalvo = repository.save(agendamento);
+            log.info("Agendamento criado com sucesso id={}", agendamentoSalvo.getId());
+            return AgendamentoMapper.toDto(agendamentoSalvo);
+        } catch (Exception e) {
+            log.error("Erro ao criar agendamento para cliente={}: {}", dto.getClienteId(), e.getMessage());
+            throw e;
+        }
+    }
+
+    public AgendamentoResponseDTO atualizar(Long id, AgendamentoRequestDTO dto) {
+        log.info("Atualizando agendamento id={}", id);
+
+        try {
+            Optional<Agendamento> agendamentoExistente = repository.findById(id);
+            if (agendamentoExistente.isEmpty()) {
+                throw new RuntimeException("Agendamento não encontrado");
+            }
+
+            Agendamento agendamento = agendamentoExistente.get();
+
+            // Validar e atualizar cliente se necessário
+            if (!agendamento.getCliente().getId().equals(dto.getClienteId())) {
+                Cliente cliente = clienteRepository.findById(dto.getClienteId())
+                        .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+                agendamento.setCliente(cliente);
+            }
+
+            // Validar e atualizar barbeiro se necessário
+            if (!agendamento.getBarbeiro().getId().equals(dto.getBarbeiroId())) {
+                Barbeiro barbeiro = barbeiroRepository.findById(dto.getBarbeiroId())
+                        .orElseThrow(() -> new RuntimeException("Barbeiro não encontrado"));
+                if (!barbeiro.isAtivo()) {
+                    throw new RuntimeException("Barbeiro não está ativo");
+                }
+                agendamento.setBarbeiro(barbeiro);
+            }
+
+            // Validar e atualizar serviço se necessário
             Servico servico = servicoRepository.findById(dto.getServicoId())
                     .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
             if (!servico.isAtivo()) {
                 throw new RuntimeException("Serviço não está ativo");
             }
             agendamento.setServico(servico);
+
+            // NOVA VALIDAÇÃO: Verificar disponibilidade para o novo horário
+            if (!disponibilidadeService.isHorarioDisponivel(dto.getBarbeiroId(), dto.getDataHora(),
+                    servico.getDuracaoMinutos())) {
+                throw new RuntimeException("Horário não disponível para reagendamento");
+            }
+
+            agendamento.setDataHora(dto.getDataHora());
+            agendamento.setObservacoes(dto.getObservacoes());
+
+            Agendamento agendamentoSalvo = repository.save(agendamento);
+            log.info("Agendamento atualizado com sucesso id={}", agendamentoSalvo.getId());
+            return AgendamentoMapper.toDto(agendamentoSalvo);
+        } catch (Exception e) {
+            log.error("Erro ao atualizar agendamento id={}: {}", id, e.getMessage());
+            throw e;
         }
-
-        agendamento.setDataHora(dto.getDataHora());
-        agendamento.setObservacoes(dto.getObservacoes());
-
-        Agendamento agendamentoSalvo = repository.save(agendamento);
-        return AgendamentoMapper.toDto(agendamentoSalvo);
     }
 
     public void excluir(Long id) {
+        log.info("Excluindo agendamento id={}", id);
+
         if (!repository.existsById(id)) {
             throw new RuntimeException("Agendamento não encontrado");
         }
         repository.deleteById(id);
+
+        log.info("Agendamento excluído com sucesso id={}", id);
     }
 
     public AgendamentoResponseDTO buscarPorId(Long id) {
@@ -129,13 +165,15 @@ public class AgendamentoService {
     }
 
     public AgendamentoResponseDTO alterarStatus(Long id, String novoStatus) {
+        log.info("Alterando status do agendamento id={} para status={}", id, novoStatus);
+
         Optional<Agendamento> agendamentoExistente = repository.findById(id);
         if (agendamentoExistente.isEmpty()) {
             throw new RuntimeException("Agendamento não encontrado");
         }
 
         // Validar status válidos
-        List<String> statusValidos = List.of("AGENDADO",  "CONCLUIDO", "CANCELADO");
+        List<String> statusValidos = List.of("AGENDADO", "CONFIRMADO", "CONCLUIDO", "CANCELADO");
         if (!statusValidos.contains(novoStatus)) {
             throw new RuntimeException("Status inválido. Use: " + String.join(", ", statusValidos));
         }
@@ -144,22 +182,34 @@ public class AgendamentoService {
         agendamento.setStatus(novoStatus);
 
         Agendamento agendamentoSalvo = repository.save(agendamento);
+        log.info("Status do agendamento alterado com sucesso id={}", agendamentoSalvo.getId());
         return AgendamentoMapper.toDto(agendamentoSalvo);
     }
 
     public List<AgendamentoResponseDTO> buscarPorCliente(Long clienteId) {
-        List<Agendamento> agendamentos = repository.findAll();
+        List<Agendamento> agendamentos = repository.findByClienteId(clienteId);
         return agendamentos.stream()
-                .filter(a -> a.getCliente().getId().equals(clienteId))
                 .map(AgendamentoMapper::toDto)
                 .toList();
     }
 
     public List<AgendamentoResponseDTO> buscarPorBarbeiro(Long barbeiroId) {
-        List<Agendamento> agendamentos = repository.findAll();
+        List<Agendamento> agendamentos = repository.findByBarbeiroId(barbeiroId);
         return agendamentos.stream()
-                .filter(a -> a.getBarbeiro().getId().equals(barbeiroId))
                 .map(AgendamentoMapper::toDto)
                 .toList();
+    }
+
+
+    public List<AgendamentoResponseDTO> buscarPorPeriodo(LocalDateTime inicio, LocalDateTime fim) {
+        List<Agendamento> agendamentos = repository.findByDataHoraBetween(inicio, fim);
+        return agendamentos.stream()
+                .map(AgendamentoMapper::toDto)
+                .toList();
+    }
+
+
+    public boolean hasConflito(Long barbeiroId, LocalDateTime inicio, LocalDateTime fim, Long agendamentoIdIgnorar) {
+        return disponibilidadeService.hasConflitoAgendamento(barbeiroId, inicio, fim, agendamentoIdIgnorar);
     }
 }
