@@ -228,19 +228,23 @@ spring.jackson.time-zone=America/Sao_Paulo
 spring.jackson.date-format=yyyy-MM-dd HH:mm:ss
 ```
 
-## 📝 Exemplo de Uso
+## 📝 Exemplo de Uso Completo
 
-📝 Exemplo de Uso Completo
-Fluxo Típico de Uso:
-1. Login como Admin (configuração inicial)
-bashcurl -X POST http://localhost:8080/auth/login \
+### Fluxo Típico de Uso:
+
+#### 1. Login como Admin (configuração inicial)
+```bash
+curl -X POST http://localhost:8080/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "username": "admin",
     "password": "admin123"
   }'
-2. Cadastrar um Barbeiro (como admin)
-bashcurl -X POST http://localhost:8080/auth/registro-barbeiro \
+```
+
+#### 2. Cadastrar um Barbeiro (como admin)
+```bash
+curl -X POST http://localhost:8080/auth/registro-barbeiro \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer TOKEN_ADMIN" \
   -d '{
@@ -251,8 +255,11 @@ bashcurl -X POST http://localhost:8080/auth/registro-barbeiro \
     "telefone": "(11) 98888-8888",
     "ativo": true
   }'
-3. Criar um Serviço (como admin/barbeiro)
-bashcurl -X POST http://localhost:8080/servicos \
+```
+
+#### 3. Criar um Serviço (como admin/barbeiro)
+```bash
+curl -X POST http://localhost:8080/servicos \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer TOKEN_ADMIN" \
   -d '{
@@ -262,8 +269,11 @@ bashcurl -X POST http://localhost:8080/servicos \
     "duracaoMinutos": 30,
     "ativo": true
   }'
-4. Configurar Horário do Barbeiro (como admin)
-bashcurl -X POST http://localhost:8080/barbeiros/1/horarios \
+```
+
+#### 4. Configurar Horário do Barbeiro (como admin)
+```bash
+curl -X POST http://localhost:8080/barbeiros/1/horarios \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer TOKEN_ADMIN" \
   -d '{
@@ -273,8 +283,11 @@ bashcurl -X POST http://localhost:8080/barbeiros/1/horarios \
     "pausaInicio": "12:00",
     "pausaFim": "13:00"
   }'
-5. Cadastrar um Cliente
-bashcurl -X POST http://localhost:8080/auth/registro-cliente \
+```
+
+#### 5. Cadastrar um Cliente
+```bash
+curl -X POST http://localhost:8080/auth/registro-cliente \
   -H "Content-Type: application/json" \
   -d '{
     "username": "joao@email.com",
@@ -282,18 +295,27 @@ bashcurl -X POST http://localhost:8080/auth/registro-cliente \
     "nome": "João Silva",
     "telefone": "(11) 99999-9999"
   }'
-6. Login como Cliente
-bashcurl -X POST http://localhost:8080/auth/login \
+```
+
+#### 6. Login como Cliente
+```bash
+curl -X POST http://localhost:8080/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "username": "joao@email.com",
     "password": "123456"
   }'
-7. Consultar Horários Disponíveis
-bashcurl -X GET "http://localhost:8080/barbeiros/1/horarios/disponiveis?data=2024-09-25" \
+```
+
+#### 7. Consultar Horários Disponíveis
+```bash
+curl -X GET "http://localhost:8080/barbeiros/1/horarios/disponiveis?data=2024-09-25" \
   -H "Authorization: Bearer TOKEN_CLIENTE"
-8. Criar um Agendamento
-bashcurl -X POST http://localhost:8080/agendamentos \
+```
+
+#### 8. Criar um Agendamento
+```bash
+curl -X POST http://localhost:8080/agendamentos \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer TOKEN_CLIENTE" \
   -d '{
@@ -303,6 +325,26 @@ bashcurl -X POST http://localhost:8080/agendamentos \
     "dataHora": "2024-09-25T14:30:00",
     "observacoes": "Corte baixo nas laterais"
   }'
+```
+
+## 🧪 Collection para Testes
+
+### Para Postman/Insomnia
+Criei uma collection completa para testar todas as funcionalidades. Salve como `barbearia-collection.json` e importe no seu cliente REST:
+
+**Inclui:**
+- ✅ Autenticação completa (Admin, Barbeiro, Cliente)
+- ✅ Gestão de tokens automática
+- ✅ Configuração inicial do sistema
+- ✅ Cenários de teste de conflito
+- ✅ Fluxo completo de agendamento
+- ✅ Testes de validação
+
+### Como usar:
+1. Importe a collection no Postman/Insomnia
+2. Execute na sequência (pasta por pasta)
+3. Os tokens são salvos automaticamente
+4. Teste todos os cenários incluídos
 
 ## 🤝 Contribuição
 
@@ -313,10 +355,9 @@ bashcurl -X POST http://localhost:8080/agendamentos \
 5. Abra um Pull Request
 
 
-
 ## 📞 Contato
 
-Gustavo Garcia Rocha - gutop.rocha@gmail.com
+Gustavo Garcia Rocha -  - gutop.rocha@gmail.com
 
 Link do Projeto: https://github.com/RochaGR/barbearia-restfull
 
