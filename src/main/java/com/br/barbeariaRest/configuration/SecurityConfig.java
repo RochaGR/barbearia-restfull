@@ -4,6 +4,7 @@ import com.br.barbeariaRest.repository.UsuarioRepository;
 import com.br.barbeariaRest.util.JwtAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -34,15 +35,44 @@ public class SecurityConfig {
     }
 
     @Bean
+    @Order(1)
+    public SecurityFilterChain webFilterChain(HttpSecurity http) throws Exception {
+        http
+                .securityMatcher("/web/**")
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/web/login", "/web/registro").permitAll()
+                        .requestMatchers("/web/admin/**").hasRole("ADMIN")
+                        .anyRequest().authenticated())
+                .formLogin(form -> form
+                        .loginPage("/web/login")
+                        .loginProcessingUrl("/web/login")
+                        .defaultSuccessUrl("/web", true)
+                        .permitAll())
+                .logout(logout -> logout
+                        .logoutUrl("/web/logout")
+                        .logoutSuccessUrl("/web/login?logout")
+                        .permitAll())
+                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
+
+        return http.build();
+    }
+
+    @Bean
+    @Order(2)
     public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        // Endpoints públicos
+                        // Endpoints publicos
                         .requestMatchers("/auth/**").permitAll()
 
                         // Endpoints administrativos
                         .requestMatchers("/usuarios/**").hasRole("ADMIN")
+
+                        // Fidelidade
+                        .requestMatchers(HttpMethod.GET, "/fidelidade/**").hasAnyRole("ADMIN", "CLIENTE")
+                        .requestMatchers(HttpMethod.POST, "/fidelidade/**").hasAnyRole("ADMIN", "CLIENTE")
+                        .requestMatchers("/admin/fidelidade/**").hasRole("ADMIN")
 
                         // Clientes
                         .requestMatchers(HttpMethod.GET, "/clientes/**").hasAnyRole("ADMIN", "CLIENTE", "BARBEIRO")
@@ -54,7 +84,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/barbeiros/**").hasAnyRole("ADMIN", "BARBEIRO")
                         .requestMatchers(HttpMethod.DELETE, "/barbeiros/**").hasRole("ADMIN")
 
-                        // Serviços
+                        // Servicos
                         .requestMatchers(HttpMethod.GET, "/servicos/**").hasAnyRole("ADMIN", "CLIENTE", "BARBEIRO")
                         .requestMatchers(HttpMethod.POST, "/servicos/**").hasAnyRole("ADMIN", "BARBEIRO")
                         .requestMatchers(HttpMethod.PUT, "/servicos/**").hasAnyRole("ADMIN", "BARBEIRO")
@@ -96,7 +126,7 @@ public class SecurityConfig {
                             authorities
                     );
                 })
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario nao encontrado"));
     }
 
     @Bean

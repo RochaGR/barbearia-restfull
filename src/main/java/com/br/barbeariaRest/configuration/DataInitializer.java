@@ -26,10 +26,8 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // Verificar se o admin já existe
         if (!usuarioRepository.findByUsername("admin").isPresent()) {
 
-            // Criar ou buscar role ADMIN
             Role adminRole = roleRepository.findByNome("ADMIN")
                     .orElseGet(() -> {
                         Role role = new Role();
@@ -37,7 +35,6 @@ public class DataInitializer implements CommandLineRunner {
                         return roleRepository.save(role);
                     });
 
-            // Criar ou buscar role BARBEIRO
             Role barbeiroRole = roleRepository.findByNome("BARBEIRO")
                     .orElseGet(() -> {
                         Role role = new Role();
@@ -45,7 +42,6 @@ public class DataInitializer implements CommandLineRunner {
                         return roleRepository.save(role);
                     });
 
-            // Criar ou buscar role CLIENTE
             Role clienteRole = roleRepository.findByNome("CLIENTE")
                     .orElseGet(() -> {
                         Role role = new Role();
@@ -53,7 +49,6 @@ public class DataInitializer implements CommandLineRunner {
                         return roleRepository.save(role);
                     });
 
-            // Criar usuário admin
             Usuario admin = new Usuario();
             admin.setUsername("admin");
             admin.setPassword(passwordEncoder.encode("admin123"));

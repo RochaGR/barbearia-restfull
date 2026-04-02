@@ -38,6 +38,12 @@ public class AgendamentoService {
     @Autowired
     private DisponibilidadeService disponibilidadeService;
 
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private FidelidadeService fidelidadeService;
+
     public AgendamentoResponseDTO criar(AgendamentoRequestDTO dto) {
         log.info("Criando agendamento para cliente={}, barbeiro={}, servico={}",
                 dto.getClienteId(), dto.getBarbeiroId(), dto.getServicoId());
@@ -65,7 +71,7 @@ public class AgendamentoService {
                 throw new RuntimeException("Serviço não está ativo");
             }
 
-            // NOVA VALIDAÇÃO: Verificar disponibilidade completa
+            // Verificar disponibilidade completa
             if (!disponibilidadeService.isHorarioDisponivel(dto.getBarbeiroId(), dto.getDataHora(),
                     servico.getDuracaoMinutos())) {
                 throw new RuntimeException("Horário não disponível para agendamento");
@@ -81,6 +87,8 @@ public class AgendamentoService {
             agendamento.setObservacoes(dto.getObservacoes());
 
             Agendamento agendamentoSalvo = repository.save(agendamento);
+            emailService.enviarEmailAgendamento(agendamentoSalvo);
+
             log.info("Agendamento criado com sucesso id={}", agendamentoSalvo.getId());
             return AgendamentoMapper.toDto(agendamentoSalvo);
         } catch (Exception e) {
@@ -125,7 +133,7 @@ public class AgendamentoService {
             }
             agendamento.setServico(servico);
 
-            // NOVA VALIDAÇÃO: Verificar disponibilidade para o novo horário
+            // Verificar disponibilidade para o novo horário
             if (!disponibilidadeService.isHorarioDisponivel(dto.getBarbeiroId(), dto.getDataHora(),
                     servico.getDuracaoMinutos())) {
                 throw new RuntimeException("Horário não disponível para reagendamento");
@@ -179,9 +187,15 @@ public class AgendamentoService {
         }
 
         Agendamento agendamento = agendamentoExistente.get();
+        String statusAnterior = agendamento.getStatus();
         agendamento.setStatus(novoStatus);
 
         Agendamento agendamentoSalvo = repository.save(agendamento);
+
+        if (!"CONCLUIDO".equals(statusAnterior) && "CONCLUIDO".equals(novoStatus)) {
+            fidelidadeService.registrarCorte(agendamento.getCliente().getId());
+        }
+
         log.info("Status do agendamento alterado com sucesso id={}", agendamentoSalvo.getId());
         return AgendamentoMapper.toDto(agendamentoSalvo);
     }
@@ -213,3 +227,4 @@ public class AgendamentoService {
         return disponibilidadeService.hasConflitoAgendamento(barbeiroId, inicio, fim, agendamentoIdIgnorar);
     }
 }
+
