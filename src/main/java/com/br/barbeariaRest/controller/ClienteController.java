@@ -2,7 +2,7 @@ package com.br.barbeariaRest.controller;
 
 import com.br.barbeariaRest.dto.response.ClienteResponseDTO;
 import com.br.barbeariaRest.service.ClienteService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,10 +11,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/clientes")
+@RequiredArgsConstructor
 public class ClienteController {
 
-    @Autowired
-    private ClienteService service;
+    private final ClienteService service;
 
 
     @GetMapping("/{id}")

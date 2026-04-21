@@ -21,6 +21,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -62,44 +66,20 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> {})
                 .authorizeHttpRequests(auth -> auth
                         // Endpoints publicos
                         .requestMatchers("/auth/**").permitAll()
 
-                        // Endpoints administrativos
-                        .requestMatchers("/usuarios/**").hasRole("ADMIN")
+                        // Barbeiros e Servicos
+                        .requestMatchers(HttpMethod.GET, "/barbeiros/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/servicos/**").permitAll()
 
-                        // Fidelidade
-                        .requestMatchers(HttpMethod.GET, "/fidelidade/**").hasAnyRole("ADMIN", "CLIENTE")
-                        .requestMatchers(HttpMethod.POST, "/fidelidade/**").hasAnyRole("ADMIN", "CLIENTE")
-                        .requestMatchers("/admin/fidelidade/**").hasRole("ADMIN")
+                        // Agendamentos -
+                        .requestMatchers(HttpMethod.POST, "/agendamentos/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/agendamentos/**").authenticated()
 
-                        // Clientes
-                        .requestMatchers(HttpMethod.GET, "/clientes/**").hasAnyRole("ADMIN", "CLIENTE", "BARBEIRO")
-                        .requestMatchers(HttpMethod.PUT, "/clientes/**").hasAnyRole("ADMIN", "CLIENTE")
-                        .requestMatchers(HttpMethod.DELETE, "/clientes/**").hasRole("ADMIN")
-
-                        // Barbeiros
-                        .requestMatchers(HttpMethod.GET, "/barbeiros/**").hasAnyRole("ADMIN", "CLIENTE", "BARBEIRO")
-                        .requestMatchers(HttpMethod.PUT, "/barbeiros/**").hasAnyRole("ADMIN", "BARBEIRO")
-                        .requestMatchers(HttpMethod.DELETE, "/barbeiros/**").hasRole("ADMIN")
-
-                        // Servicos
-                        .requestMatchers(HttpMethod.GET, "/servicos/**").hasAnyRole("ADMIN", "CLIENTE", "BARBEIRO")
-                        .requestMatchers(HttpMethod.POST, "/servicos/**").hasAnyRole("ADMIN", "BARBEIRO")
-                        .requestMatchers(HttpMethod.PUT, "/servicos/**").hasAnyRole("ADMIN", "BARBEIRO")
-                        .requestMatchers(HttpMethod.PATCH, "/servicos/**").hasAnyRole("ADMIN", "BARBEIRO")
-                        .requestMatchers(HttpMethod.DELETE, "/servicos/**").hasRole("ADMIN")
-
-                        // Agendamentos
-                        .requestMatchers(HttpMethod.GET, "/agendamentos").hasAnyRole("ADMIN", "BARBEIRO")
-                        .requestMatchers(HttpMethod.GET, "/agendamentos/cliente/**").hasAnyRole("ADMIN", "CLIENTE")
-                        .requestMatchers(HttpMethod.GET, "/agendamentos/barbeiro/**").hasAnyRole("ADMIN", "BARBEIRO")
-                        .requestMatchers(HttpMethod.POST, "/agendamentos").hasAnyRole("ADMIN", "CLIENTE")
-                        .requestMatchers(HttpMethod.PUT, "/agendamentos/**").hasAnyRole("ADMIN", "CLIENTE", "BARBEIRO")
-                        .requestMatchers(HttpMethod.PATCH, "/agendamentos/**").hasAnyRole("ADMIN", "BARBEIRO")
-                        .requestMatchers(HttpMethod.DELETE, "/agendamentos/**").hasRole("ADMIN")
-
+                        // Demais endpoints precisam de autenticação
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

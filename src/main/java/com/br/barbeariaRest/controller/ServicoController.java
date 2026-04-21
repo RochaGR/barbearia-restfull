@@ -4,7 +4,7 @@ import com.br.barbeariaRest.dto.request.ServicoRequestDTO;
 import com.br.barbeariaRest.dto.response.ServicoResponseDTO;
 import com.br.barbeariaRest.service.ServicoService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,10 +13,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/servicos")
+@RequiredArgsConstructor
 public class ServicoController {
 
-    @Autowired
-    private ServicoService service;
+    private final ServicoService service;
 
     @PostMapping
     public ResponseEntity<?> criar(@Valid @RequestBody ServicoRequestDTO dto) {
