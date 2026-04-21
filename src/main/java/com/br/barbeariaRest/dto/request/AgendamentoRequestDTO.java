@@ -2,7 +2,6 @@ package com.br.barbeariaRest.dto.request;
 
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,7 +27,4 @@ public class AgendamentoRequestDTO {
     @NotNull(message = "Data e hora são obrigatórias")
     @Future(message = "Data e hora devem ser futuras")
     private LocalDateTime dataHora;
-
-    @Size(max = 500, message = "Observações devem ter no máximo 500 caracteres")
-    private String observacoes;
 }

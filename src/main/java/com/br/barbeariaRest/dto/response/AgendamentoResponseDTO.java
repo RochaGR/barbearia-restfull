@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -18,6 +19,7 @@ public class AgendamentoResponseDTO {
     private ServicoResponseDTO servico;
     private LocalDateTime dataHora;
     private String status;
-    private String observacoes;
+    private BigDecimal precoOriginal;
+    private BigDecimal precoFinal;
 
 }

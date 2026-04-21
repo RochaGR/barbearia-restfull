@@ -28,14 +28,13 @@ public class Agendamento {
     @JoinColumn(name = "barbeiro_id")
     private Barbeiro barbeiro;
 
-    @ManyToOne
+@ManyToOne
     @JoinColumn(name = "servico_id")
     private Servico servico;
 
     private LocalDateTime dataHora;
     private String status = "AGENDADO";
-    //Pré setado Agendado
-    private String observacoes;
-
+    private java.math.BigDecimal precoOriginal;
+    private java.math.BigDecimal precoFinal;
 
 }

@@ -19,6 +19,13 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
 
     List<Agendamento> findByStatus(String status);
 
+    List<Agendamento> findByClienteIdAndStatus(Long clienteId, String status);
+
+    @Query("SELECT a FROM Agendamento a WHERE a.cliente.id = :clienteId AND a.dataHora BETWEEN :inicio AND :fim")
+    List<Agendamento> findByClienteIdAndDataHoraBetween(@Param("clienteId") Long clienteId,
+                                                         @Param("inicio") LocalDateTime inicio,
+                                                         @Param("fim") LocalDateTime fim);
+
     // Buscar agendamentos de um período
     @Query("SELECT a FROM Agendamento a WHERE a.dataHora BETWEEN :inicio AND :fim")
     List<Agendamento> findByDataHoraBetween(@Param("inicio") LocalDateTime inicio,
@@ -33,4 +40,10 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
                                            @Param("inicio") LocalDateTime inicio,
                                            @Param("fim") LocalDateTime fim,
                                            @Param("agendamentoId") Long agendamentoId);
+
+    // Buscar agendamentos por barbeiro em período
+    @Query("SELECT a FROM Agendamento a WHERE a.barbeiro.id = :barbeiroId AND a.dataHora BETWEEN :inicio AND :fim")
+    List<Agendamento> findByBarbeiroIdAndDataHoraBetween(@Param("barbeiroId") Long barbeiroId,
+                                                      @Param("inicio") LocalDateTime inicio,
+                                                      @Param("fim") LocalDateTime fim);
 }

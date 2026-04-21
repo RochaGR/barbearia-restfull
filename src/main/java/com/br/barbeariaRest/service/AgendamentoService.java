@@ -11,8 +11,8 @@ import com.br.barbeariaRest.repository.AgendamentoRepository;
 import com.br.barbeariaRest.repository.ClienteRepository;
 import com.br.barbeariaRest.repository.BarbeiroRepository;
 import com.br.barbeariaRest.repository.ServicoRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -21,36 +21,24 @@ import java.util.Optional;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class AgendamentoService {
 
-    @Autowired
-    private AgendamentoRepository repository;
-
-    @Autowired
-    private ClienteRepository clienteRepository;
-
-    @Autowired
-    private BarbeiroRepository barbeiroRepository;
-
-    @Autowired
-    private ServicoRepository servicoRepository;
-
-    @Autowired
-    private DisponibilidadeService disponibilidadeService;
-
-    @Autowired
-    private EmailService emailService;
-
-    @Autowired
-    private FidelidadeService fidelidadeService;
+    private final AgendamentoRepository repository;
+    private final ClienteRepository clienteRepository;
+    private final BarbeiroRepository barbeiroRepository;
+    private final ServicoRepository servicoRepository;
+    private final DisponibilidadeService disponibilidadeService;
+    private final EmailService emailService;
+    private final FidelidadeService fidelidadeService;
 
     public AgendamentoResponseDTO criar(AgendamentoRequestDTO dto) {
         log.info("Criando agendamento para cliente={}, barbeiro={}, servico={}",
                 dto.getClienteId(), dto.getBarbeiroId(), dto.getServicoId());
 
         try {
-            // Validar se cliente existe
-            Cliente cliente = clienteRepository.findById(dto.getClienteId())
+            // Buscar cliente pelo usuario_id (não pelo id da tabela cliente)
+            Cliente cliente = clienteRepository.findByUsuarioId(dto.getClienteId())
                     .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
             // Validar se barbeiro existe
@@ -84,13 +72,26 @@ public class AgendamentoService {
             agendamento.setServico(servico);
             agendamento.setDataHora(dto.getDataHora());
             agendamento.setStatus("AGENDADO");
-            agendamento.setObservacoes(dto.getObservacoes());
+            agendamento.setPrecoOriginal(servico.getPreco());
+            agendamento.setPrecoFinal(servico.getPreco());
 
             Agendamento agendamentoSalvo = repository.save(agendamento);
+
+            fidelidadeService.aplicarCupomSeExistente(cliente.getId(), agendamentoSalvo);
+
+            agendamentoSalvo = repository.save(agendamentoSalvo);
+            
+repository.flush();
+
+            log.info("Retornando response - precoOriginal={}, precoFinal={}", agendamentoSalvo.getPrecoOriginal(), agendamentoSalvo.getPrecoFinal());
+            
+            AgendamentoResponseDTO response = AgendamentoMapper.toDto(agendamentoSalvo);
+            log.info("Response criado - precoOriginal={}, precoFinal={}", response.getPrecoOriginal(), response.getPrecoFinal());
+            
             emailService.enviarEmailAgendamento(agendamentoSalvo);
 
-            log.info("Agendamento criado com sucesso id={}", agendamentoSalvo.getId());
-            return AgendamentoMapper.toDto(agendamentoSalvo);
+            log.info("Agendamento criado com sucesso id={}, precoFinal={}", agendamentoSalvo.getId(), agendamentoSalvo.getPrecoFinal());
+            return response;
         } catch (Exception e) {
             log.error("Erro ao criar agendamento para cliente={}: {}", dto.getClienteId(), e.getMessage());
             throw e;
@@ -140,7 +141,6 @@ public class AgendamentoService {
             }
 
             agendamento.setDataHora(dto.getDataHora());
-            agendamento.setObservacoes(dto.getObservacoes());
 
             Agendamento agendamentoSalvo = repository.save(agendamento);
             log.info("Agendamento atualizado com sucesso id={}", agendamentoSalvo.getId());
@@ -214,6 +214,14 @@ public class AgendamentoService {
                 .toList();
     }
 
+    public List<AgendamentoResponseDTO> buscarPorBarbeiroEPeriodo(Long barbeiroId, LocalDateTime inicio, LocalDateTime fim) {
+        List<Agendamento> agendamentos = repository.findByBarbeiroIdAndDataHoraBetween(barbeiroId, inicio, fim);
+        return agendamentos.stream()
+                .map(AgendamentoMapper::toDto)
+                .sorted((a1, a2) -> a2.getDataHora().compareTo(a1.getDataHora()))
+                .toList();
+    }
+
 
     public List<AgendamentoResponseDTO> buscarPorPeriodo(LocalDateTime inicio, LocalDateTime fim) {
         List<Agendamento> agendamentos = repository.findByDataHoraBetween(inicio, fim);
@@ -223,8 +231,9 @@ public class AgendamentoService {
     }
 
 
-    public boolean hasConflito(Long barbeiroId, LocalDateTime inicio, LocalDateTime fim, Long agendamentoIdIgnorar) {
+public boolean hasConflito(Long barbeiroId, LocalDateTime inicio, LocalDateTime fim, Long agendamentoIdIgnorar) {
         return disponibilidadeService.hasConflitoAgendamento(barbeiroId, inicio, fim, agendamentoIdIgnorar);
     }
 }
+
 

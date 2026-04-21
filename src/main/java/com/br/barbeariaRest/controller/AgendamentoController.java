@@ -4,20 +4,23 @@ import com.br.barbeariaRest.dto.request.AgendamentoRequestDTO;
 import com.br.barbeariaRest.dto.response.AgendamentoResponseDTO;
 import com.br.barbeariaRest.service.AgendamentoService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/agendamentos")
+@RequiredArgsConstructor
 public class AgendamentoController {
 
-    @Autowired
-    private AgendamentoService service;
+    private final AgendamentoService service;
 
     @PostMapping
     public ResponseEntity<?> criar(@Valid @RequestBody AgendamentoRequestDTO dto) {
@@ -90,5 +93,43 @@ public class AgendamentoController {
     @GetMapping("/barbeiro/{barbeiroId}")
     public ResponseEntity<List<AgendamentoResponseDTO>> buscarPorBarbeiro(@PathVariable Long barbeiroId) {
         return ResponseEntity.ok(service.buscarPorBarbeiro(barbeiroId));
+    }
+
+    @GetMapping("/barbeiro/{barbeiroId}/filtro")
+    public ResponseEntity<List<AgendamentoResponseDTO>> buscarPorBarbeiroComFiltro(
+            @PathVariable Long barbeiroId,
+            @RequestParam(required = false, defaultValue = "semana") String periodo) {
+        
+        LocalDate hoje = LocalDate.now();
+        LocalDateTime inicio;
+        LocalDateTime fim = hoje.atTime(LocalTime.MAX);
+        
+        switch (periodo.toLowerCase()) {
+            case "hoje":
+                inicio = hoje.atStartOfDay();
+                break;
+            case "semana":
+                inicio = hoje.minusDays(6).atStartOfDay();
+                break;
+            case "mes":
+                inicio = hoje.withDayOfMonth(1).atStartOfDay();
+                break;
+            default:
+                inicio = hoje.minusDays(6).atStartOfDay();
+        }
+        
+        return ResponseEntity.ok(service.buscarPorBarbeiroEPeriodo(barbeiroId, inicio, fim));
+    }
+
+    @GetMapping("/barbeiro/{barbeiroId}/data")
+    public ResponseEntity<List<AgendamentoResponseDTO>> buscarPorBarbeiroEData(
+            @PathVariable Long barbeiroId,
+            @RequestParam String data) {
+        
+        LocalDate dataParam = LocalDate.parse(data);
+        LocalDateTime inicio = dataParam.atStartOfDay();
+        LocalDateTime fim = dataParam.atTime(LocalTime.MAX);
+        
+        return ResponseEntity.ok(service.buscarPorBarbeiroEPeriodo(barbeiroId, inicio, fim));
     }
 }

@@ -17,7 +17,8 @@ public class AgendamentoMapper {
                 ServicoMapper.toDto(agendamento.getServico()),
                 agendamento.getDataHora(),
                 agendamento.getStatus(),
-                agendamento.getObservacoes()
+                agendamento.getPrecoOriginal(),
+                agendamento.getPrecoFinal()
         );
     }
 
@@ -31,7 +32,8 @@ public class AgendamentoMapper {
         agendamento.setServico(ServicoMapper.toEntity(agendamentoResponseDTO.getServico()));
         agendamento.setDataHora(agendamentoResponseDTO.getDataHora());
         agendamento.setStatus(agendamentoResponseDTO.getStatus());
-        agendamento.setObservacoes(agendamentoResponseDTO.getObservacoes());
+        agendamento.setPrecoOriginal(agendamentoResponseDTO.getPrecoOriginal());
+        agendamento.setPrecoFinal(agendamentoResponseDTO.getPrecoFinal());
 
         return agendamento;
     }
