@@ -10,9 +10,15 @@ public class BarbeiroMapper {
     public static BarbeiroResponseDTO toDto(Barbeiro barbeiro) {
         if (barbeiro == null) return null;
 
+        String email = null;
+        if (barbeiro.getUsuario() != null) {
+            email = barbeiro.getUsuario().getUsername();
+        }
+
         return new BarbeiroResponseDTO(
                 barbeiro.getId(),
                 barbeiro.getNome(),
+                email,
                 barbeiro.getEspecialidades(),
                 barbeiro.getTelefone(),
                 barbeiro.isAtivo()

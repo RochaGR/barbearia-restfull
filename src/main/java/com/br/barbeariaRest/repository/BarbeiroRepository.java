@@ -11,4 +11,7 @@ import java.util.Optional;
 @Repository
 public interface BarbeiroRepository extends JpaRepository<Barbeiro, Long> {
     Optional<Barbeiro> findById(Long id);
+    Optional<Barbeiro> findByUsuarioId(Long usuarioId);
+    Optional<Barbeiro> findByUsuarioUsername(String username);
+    List<Barbeiro> findByAtivoTrue();
 }

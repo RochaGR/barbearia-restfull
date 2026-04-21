@@ -12,6 +12,7 @@ import lombok.Setter;
 public class BarbeiroResponseDTO {
     private Long id;
     private String nome;
+    private String email;
     private String especialidades;
     private String telefone;
     private boolean ativo;

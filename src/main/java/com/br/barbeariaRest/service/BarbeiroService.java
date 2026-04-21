@@ -11,7 +11,7 @@ import com.br.barbeariaRest.repository.BarbeiroRepository;
 import com.br.barbeariaRest.repository.RoleRepository;
 import com.br.barbeariaRest.repository.UsuarioRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,19 +21,13 @@ import java.util.Optional;
 import java.util.Set;
 
 @Service
+@RequiredArgsConstructor
 public class BarbeiroService {
 
-    @Autowired
-    private BarbeiroRepository repository;
-
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-
-    @Autowired
-    private RoleRepository roleRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final BarbeiroRepository repository;
+    private final UsuarioRepository usuarioRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public BarbeiroResponseDTO salvar(BarbeiroResponseDTO dto) {
         Barbeiro barbeiro = BarbeiroMapper.toEntity(dto);
@@ -52,6 +46,11 @@ public class BarbeiroService {
 
     public List<BarbeiroResponseDTO> buscarTodos() {
         List<Barbeiro> barbeiros = repository.findAll();
+        return barbeiros.stream().map(BarbeiroMapper::toDto).toList();
+    }
+
+    public List<BarbeiroResponseDTO> buscarAtivos() {
+        List<Barbeiro> barbeiros = repository.findByAtivoTrue();
         return barbeiros.stream().map(BarbeiroMapper::toDto).toList();
     }
 
@@ -99,5 +98,16 @@ public class BarbeiroService {
                 .map(Barbeiro::getId)
                 .map(id -> id.equals(barbeiroId))
                 .orElse(false);
+    }
+
+    @Transactional
+    public BarbeiroResponseDTO alterarStatus(Long id, boolean ativo) {
+        Optional<Barbeiro> opt = repository.findById(id);
+        if (opt.isEmpty()) return null;
+
+        Barbeiro barbeiro = opt.get();
+        barbeiro.setAtivo(ativo);
+        Barbeiro salvo = repository.save(barbeiro);
+        return BarbeiroMapper.toDto(salvo);
     }
 }
