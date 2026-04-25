@@ -12,6 +12,7 @@ CREATE TABLE fidelidade_cliente (
   cliente_id BIGINT NOT NULL UNIQUE,
   cortes_realizados INTEGER NOT NULL DEFAULT 0,
   total_cupons_gerados INTEGER NOT NULL DEFAULT 0,
+  total_economizado DECIMAL(10,2) DEFAULT 0,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_fidelidade_cliente FOREIGN KEY (cliente_id) REFERENCES cliente(id) ON DELETE CASCADE
 );
