@@ -37,6 +37,10 @@ public class FidelidadeCliente {
     @Column(name = "total_cupons_gerados")
     private Integer totalCuponsGerados = 0;
 
+    @Column(name = "total_economizado")
+    private java.math.BigDecimal totalEconomizado = java.math.BigDecimal.ZERO;
+
+
     @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
 }

@@ -4,8 +4,9 @@ import com.br.barbeariaRest.model.ConfiguracaoFidelidade;
 import com.br.barbeariaRest.model.CupomDesconto;
 import com.br.barbeariaRest.model.FidelidadeCliente;
 import com.br.barbeariaRest.repository.ConfiguracaoFidelidadeRepository;
+import com.br.barbeariaRest.service.AuthenticatedUserService;
 import com.br.barbeariaRest.service.FidelidadeService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,13 +20,46 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
+@RequiredArgsConstructor
 public class FidelidadeController {
 
-    @Autowired
-    private FidelidadeService fidelidadeService;
+    private final FidelidadeService fidelidadeService;
+    private final ConfiguracaoFidelidadeRepository configRepo;
+    private final AuthenticatedUserService authService;
 
-    @Autowired
-    private ConfiguracaoFidelidadeRepository configRepo;
+    @GetMapping("/clientes/fidelidade")
+    public ResponseEntity<?> getFidelidadeClienteLogado() {
+        String username = authService.getCurrentUsername();
+
+        if (username == null) {
+            return ResponseEntity.badRequest().body("Usuário não autenticado");
+        }
+
+        try {
+            FidelidadeCliente fidelidade = fidelidadeService.buscarFidelidadePorUsername(username);
+            Map<String, Object> response = new LinkedHashMap<>();
+            response.put("id", fidelidade.getId());
+            response.put("clienteId", fidelidade.getCliente().getId());
+            response.put("cortesRealizados", fidelidade.getCortesRealizados());
+            response.put("totalCuponsGerados", fidelidade.getTotalCuponsGerados());
+            response.put("totalEconomizado", fidelidade.getTotalEconomizado());
+            
+            var config = configRepo.findByAtivoTrue();
+            if (config.isPresent()) {
+                response.put("cortesParaRecompensa", config.get().getCortesParaRecompensa());
+                response.put("percentualDesconto", config.get().getPercentualDesconto());
+                response.put("validadeCupomDias", config.get().getValidadeCupomDias());
+            } else {
+                response.put("cortesParaRecompensa", 10);
+                response.put("percentualDesconto", 10);
+                response.put("validadeCupomDias", 30);
+            }
+            
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 
     @GetMapping("/fidelidade/cliente/{clienteId}")
     public ResponseEntity<?> getFidelidade(@PathVariable Long clienteId) {
@@ -97,4 +131,3 @@ public class FidelidadeController {
         }).orElse(ResponseEntity.notFound().build());
     }
 }
-

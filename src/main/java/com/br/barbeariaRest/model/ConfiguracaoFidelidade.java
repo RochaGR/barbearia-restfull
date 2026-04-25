@@ -27,10 +27,10 @@ public class ConfiguracaoFidelidade {
     private Long id;
 
     @Column(name = "cortes_para_recompensa")
-    private Integer cortesParaRecompensa = 5;
+    private Integer cortesParaRecompensa;
 
     @Column(name = "percentual_desconto")
-    private BigDecimal percentualDesconto = new BigDecimal("40.00");
+    private BigDecimal percentualDesconto;
 
     @Column(name = "validade_cupom_dias")
     private Integer validadeCupomDias = 30;

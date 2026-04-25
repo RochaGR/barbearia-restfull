@@ -10,31 +10,40 @@ import com.br.barbeariaRest.repository.ConfiguracaoFidelidadeRepository;
 import com.br.barbeariaRest.repository.CupomDescontoRepository;
 import com.br.barbeariaRest.repository.FidelidadeClienteRepository;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class FidelidadeService {
 
-    @Autowired
-    private FidelidadeClienteRepository fidelidadeClienteRepository;
+    private final FidelidadeClienteRepository fidelidadeClienteRepository;
+    private final CupomDescontoRepository cupomDescontoRepository;
+    private final ConfiguracaoFidelidadeRepository configFidelidadeRepository;
+    private final ClienteRepository clienteRepository;
 
-    @Autowired
-    private CupomDescontoRepository cupomDescontoRepository;
-
-    @Autowired
-    private ConfiguracaoFidelidadeRepository configFidelidadeRepository;
-
-    @Autowired
-    private ClienteRepository clienteRepository;
+    public FidelidadeCliente buscarFidelidadePorUsername(String username) {
+        Cliente cliente = clienteRepository.findByUsuarioUsername(username)
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+        return fidelidadeClienteRepository.findByClienteId(cliente.getId())
+                .orElseGet(() -> {
+                    FidelidadeCliente nova = new FidelidadeCliente();
+                    nova.setCliente(cliente);
+                    nova.setCortesRealizados(0);
+                    nova.setTotalCuponsGerados(0);
+                    return fidelidadeClienteRepository.save(nova);
+                });
+    }
 
     @Transactional
     public void registrarCorte(Long clienteId) {
@@ -91,6 +100,16 @@ public class FidelidadeService {
     @Transactional
     public void aplicarCupom(String codigo, Agendamento agendamento) {
         CupomDesconto cupom = validarCupom(codigo);
+        
+        BigDecimal precoOriginal = agendamento.getPrecoOriginal();
+        BigDecimal percentual = cupom.getPercentualDesconto();
+        
+        BigDecimal desconto = precoOriginal.multiply(percentual)
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        BigDecimal precoComDesconto = precoOriginal.subtract(desconto);
+        
+        agendamento.setPrecoFinal(precoComDesconto);
+        
         cupom.setStatus(CupomDesconto.StatusCupom.USADO);
         cupom.setAgendamentoUso(agendamento);
         cupomDescontoRepository.save(cupom);
@@ -122,6 +141,56 @@ public class FidelidadeService {
             padrao.setAtivo(true);
             return configFidelidadeRepository.save(padrao);
         });
+    }
+
+    @Transactional
+    public void aplicarCupomSeExistente(Long clienteId, Agendamento agendamento) {
+        log.info("Verificando cupom para cliente id={}", clienteId);
+        
+        List<CupomDesconto> cuponsAtivos = cupomDescontoRepository
+                .findByClienteIdAndStatus(clienteId, CupomDesconto.StatusCupom.ATIVO);
+        
+        log.info("Cupons ativos encontrados: {}", cuponsAtivos.size());
+        
+        if (!cuponsAtivos.isEmpty()) {
+            CupomDesconto cupom = cuponsAtivos.get(0);
+            log.info("Cupom encontrado: codigo={}, percentual={}", cupom.getCodigo(), cupom.getPercentualDesconto());
+            
+            if (cupom.getDataExpiracao().isBefore(LocalDate.now())) {
+                cupom.setStatus(CupomDesconto.StatusCupom.EXPIRADO);
+                cupomDescontoRepository.save(cupom);
+                log.info("Cupom expirado");
+                return;
+            }
+            
+            BigDecimal precoOriginal = agendamento.getPrecoOriginal();
+            BigDecimal percentual = cupom.getPercentualDesconto();
+            
+            BigDecimal desconto = precoOriginal.multiply(percentual)
+                    .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+            BigDecimal precoComDesconto = precoOriginal.subtract(desconto);
+            
+            log.info("Aplicando desconto: original={}, desconto={}, final={}", precoOriginal, desconto, precoComDesconto);
+            
+            agendamento.setPrecoFinal(precoComDesconto);
+            
+            cupom.setStatus(CupomDesconto.StatusCupom.USADO);
+            cupom.setAgendamentoUso(agendamento);
+            cupomDescontoRepository.save(cupom);
+            
+            FidelidadeCliente fidelidade = fidelidadeClienteRepository.findByClienteId(clienteId)
+                    .orElse(null);
+            if (fidelidade != null) {
+                fidelidade.setCortesRealizados(0);
+                
+                BigDecimal atual = fidelidade.getTotalEconomizado() != null 
+                        ? fidelidade.getTotalEconomizado() 
+                        : BigDecimal.ZERO;
+                fidelidade.setTotalEconomizado(atual.add(desconto));
+                
+                fidelidadeClienteRepository.save(fidelidade);
+            }
+        }
     }
 }
 
