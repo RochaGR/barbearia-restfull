@@ -13,7 +13,6 @@ public class ServicoMapper {
         return new ServicoResponseDTO(
                 servico.getId(),
                 servico.getNome(),
-                servico.getDescricao(),
                 servico.getPreco(),
                 servico.getDuracaoMinutos(),
                 servico.isAtivo()
@@ -25,7 +24,6 @@ public class ServicoMapper {
         Servico servico = new Servico();
         servico.setId(servicoResponseDTO.getId());
         servico.setNome(servicoResponseDTO.getNome());
-        servico.setDescricao(servicoResponseDTO.getDescricao());
         servico.setPreco(servicoResponseDTO.getPreco());
         servico.setDuracaoMinutos(servicoResponseDTO.getDuracaoMinutos());
         servico.setAtivo(servicoResponseDTO.isAtivo());

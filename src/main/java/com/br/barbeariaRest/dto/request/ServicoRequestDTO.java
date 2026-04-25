@@ -22,9 +22,6 @@ public class ServicoRequestDTO {
     @Size(min = 2, max = 100, message = "Nome deve ter entre 2 e 100 caracteres")
     private String nome;
 
-    @Size(max = 500, message = "Descrição deve ter no máximo 500 caracteres")
-    private String descricao;
-
     @NotNull(message = "Preço é obrigatório")
     @DecimalMin(value = "0.01", message = "Preço deve ser maior que zero")
     private BigDecimal preco;

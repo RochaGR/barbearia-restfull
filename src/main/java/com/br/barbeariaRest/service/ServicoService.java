@@ -5,22 +5,21 @@ import com.br.barbeariaRest.dto.response.ServicoResponseDTO;
 import com.br.barbeariaRest.dto.mapper.ServicoMapper;
 import com.br.barbeariaRest.model.Servico;
 import com.br.barbeariaRest.repository.ServicoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class ServicoService {
 
-    @Autowired
-    private ServicoRepository repository;
+    private final ServicoRepository repository;
 
     public ServicoResponseDTO criar(ServicoRequestDTO dto) {
         Servico servico = new Servico();
         servico.setNome(dto.getNome());
-        servico.setDescricao(dto.getDescricao());
         servico.setPreco(dto.getPreco());
         servico.setDuracaoMinutos(dto.getDuracaoMinutos());
         servico.setAtivo(dto.isAtivo());
@@ -37,7 +36,6 @@ public class ServicoService {
 
         Servico servico = servicoExistente.get();
         servico.setNome(dto.getNome());
-        servico.setDescricao(dto.getDescricao());
         servico.setPreco(dto.getPreco());
         servico.setDuracaoMinutos(dto.getDuracaoMinutos());
         servico.setAtivo(dto.isAtivo());

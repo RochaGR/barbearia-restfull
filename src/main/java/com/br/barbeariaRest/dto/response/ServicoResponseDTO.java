@@ -14,10 +14,8 @@ import java.math.BigDecimal;
 public class ServicoResponseDTO {
     private Long id;
     private String nome;
-    private String descricao;
     private BigDecimal preco;
     private Integer duracaoMinutos;
     private boolean ativo;
-
 
 }

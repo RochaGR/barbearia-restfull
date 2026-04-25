@@ -21,7 +21,6 @@ public class Servico {
     private Long id;
 
     private String nome;
-    private String descricao;
     private BigDecimal preco;
     private Integer duracaoMinutos;
     private boolean ativo = true;
